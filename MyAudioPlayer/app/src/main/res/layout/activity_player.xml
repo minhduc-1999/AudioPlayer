@@ -115,6 +115,8 @@
             android:layout_height="wrap_content"
             android:id="@+id/play_pause"
             android:src="@drawable/ic_round_play_arrow_24"
+            android:backgroundTint="@color/colorPrimary"
+            app:borderWidth="2.5dp"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
             android:focusable="true"
