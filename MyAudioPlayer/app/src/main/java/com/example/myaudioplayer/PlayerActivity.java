@@ -1,26 +1,24 @@
 package com.example.myaudioplayer;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.MediaStore;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.bumptech.glide.Glide;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.Random;
 
+import static com.example.myaudioplayer.AlbumDetailsAdapter.albumFiles;
 import static com.example.myaudioplayer.MainActivity.musicFiles;
 import static com.example.myaudioplayer.MainActivity.repeatBoolean;
 import static com.example.myaudioplayer.MainActivity.shuffleBoolean;
@@ -267,6 +265,12 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 
     private void getIntentMethod() {
         position = getIntent().getIntExtra("position", -1);
+        String sender = getIntent().getStringExtra("sender");
+        if (sender != null && sender.equals("albumDetails"))
+        {
+            listSong = albumFiles;
+        }
+        else
         listSong = musicFiles;
         if (listSong != null) {
             playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
