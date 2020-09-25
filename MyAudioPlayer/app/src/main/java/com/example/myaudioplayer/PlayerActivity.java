@@ -1,7 +1,13 @@
 package com.example.myaudioplayer;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.palette.graphics.Palette;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -10,6 +16,7 @@ import android.os.Handler;
 import android.provider.MediaStore;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -308,8 +315,46 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         artist_name.setText(listSong.get(position).getArtist());
         seekBar.setMax(mediaPlayer.getDuration() / 1000);
         byte[] art = retriever.getEmbeddedPicture();
+        Bitmap bitmap;
         if (art != null) {
             Glide.with(this).asBitmap().load(art).into(cover_art);
+            bitmap = BitmapFactory.decodeByteArray(art,0,art.length);
+            Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
+                @Override
+                public void onGenerated(@Nullable Palette palette) {
+                    Palette.Swatch swatch = palette.getDominantSwatch();
+                    if(swatch != null)
+                    {
+                        ImageView gredient = findViewById(R.id.imageViewGradient);
+                        RelativeLayout mContainer = findViewById(R.id.mContainer);
+                        gredient.setBackgroundResource(R.drawable.gradient_bg);
+                        mContainer.setBackgroundResource(R.drawable.main_bg);
+                        GradientDrawable gradientDrawable = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,
+                                new int[]{swatch.getRgb(),0x00000000});
+                        gredient.setBackground(gradientDrawable);
+                        GradientDrawable gradientDrawableBg = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,
+                                new int[]{swatch.getRgb(),swatch.getRgb()});
+                        mContainer.setBackground(gradientDrawableBg);
+                        song_name.setTextColor(swatch.getBodyTextColor());
+                        artist_name.setTextColor(swatch.getBodyTextColor());
+                    }
+                    else
+                    {
+                        ImageView gredient = findViewById(R.id.imageViewGradient);
+                        RelativeLayout mContainer = findViewById(R.id.mContainer);
+                        gredient.setBackgroundResource(R.drawable.gradient_bg);
+                        mContainer.setBackgroundResource(R.drawable.main_bg);
+                        GradientDrawable gradientDrawable = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,
+                                new int[]{0xff000000,0x00000000});
+                        gredient.setBackground(gradientDrawable);
+                        GradientDrawable gradientDrawableBg = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,
+                                new int[]{0xff000000,0xff000000});
+                        mContainer.setBackground(gradientDrawableBg);
+                        song_name.setTextColor(Color.WHITE);
+                        artist_name.setTextColor(Color.DKGRAY);
+                    }
+                }
+            });
         } else {
             Glide.with(this).asBitmap().load(R.drawable.music_default).into(cover_art);
         }
