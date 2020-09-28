@@ -91,8 +91,7 @@
         android:id="@+id/relative_layout_for_bottom"
         android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentRight="true"
-        android:background="@drawable/gradient_bg">
+        android:layout_alignParentRight="true">
         <ImageView
             android:layout_width="35dp"
             android:layout_height="35dp"
@@ -163,6 +162,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/seekBar"
+            android:thumbTintMode="src_in"
+            android:thumbTint="@color/selectedColor"
+            android:progressTint="@color/selectedColor"
+            android:progressBackgroundTint="@color/progress"
             android:layout_alignParentBottom="true"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"/>
