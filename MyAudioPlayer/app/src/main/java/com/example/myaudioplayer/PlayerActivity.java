@@ -37,6 +37,7 @@ import static com.example.myaudioplayer.AlbumDetailsAdapter.albumFiles;
 import static com.example.myaudioplayer.MainActivity.musicFiles;
 import static com.example.myaudioplayer.MainActivity.repeatBoolean;
 import static com.example.myaudioplayer.MainActivity.shuffleBoolean;
+import static com.example.myaudioplayer.MusicAdapter.mFiles;
 
 public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener {
     TextView song_name, artist_name, duration_played, duration_total;
@@ -267,12 +268,10 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     private void getIntentMethod() {
         position = getIntent().getIntExtra("position", -1);
         String sender = getIntent().getStringExtra("sender");
-        if (sender != null && sender.equals("albumDetails"))
-        {
+        if (sender != null && sender.equals("albumDetails")) {
             listSong = albumFiles;
-        }
-        else
-        listSong = musicFiles;
+        } else
+            listSong = mFiles;
         if (listSong != null) {
             playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
             uri = Uri.parse(listSong.get(position).getPath());

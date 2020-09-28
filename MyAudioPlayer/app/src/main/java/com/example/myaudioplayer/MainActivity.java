@@ -3,6 +3,7 @@ package com.example.myaudioplayer;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -18,6 +19,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.TableLayout;
 import android.widget.Toast;
 
@@ -26,7 +29,7 @@ import com.google.android.material.tabs.TabLayout;
 import java.io.Console;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
     public static final int REQUEST_CODE = 1;
     static ArrayList<MusicFiles> musicFiles;
     static boolean shuffleBoolean = false, repeatBoolean = false;
@@ -117,9 +120,10 @@ public class MainActivity extends AppCompatActivity {
                 MediaStore.Audio.Media._ID
         };
         Cursor cursor = context.getContentResolver().query(uri, projection, null, null, null);
-        if (cursor != null)
+
+        if (cursor != null && cursor.moveToFirst())
         {
-            while (cursor.moveToNext()) {
+            do {
                 String album = cursor.getString(0);
                 String title = cursor.getString(1);
                 String duration = cursor.getString(2);
@@ -127,16 +131,44 @@ public class MainActivity extends AppCompatActivity {
                 String artist = cursor.getString(4);
                 String id = cursor.getString(5);
                 MusicFiles musicFiles = new MusicFiles(path, title, artist, album, duration, id);
-                //take log.e for check
-                //Log.e("Path: " + path, "Album: " + album);
+
                 tempAudioList.add(musicFiles);
                 if (!(duplicate.contains((album)))) {
                     albums.add(musicFiles);
                     duplicate.add(album);
                 }
-            }
+            } while (cursor.moveToNext());
                 cursor.close();
         }
         return tempAudioList;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.search, menu);
+        MenuItem menuItem = menu.findItem(R.id.search_option);
+        SearchView searchView = (SearchView) menuItem.getActionView();
+        searchView.setOnQueryTextListener(this);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        String userInput = newText.toLowerCase();
+        ArrayList<MusicFiles> myFiles = new ArrayList<>();
+        for (MusicFiles song : musicFiles)
+        {
+            if(song.getTitle().toLowerCase().contains(userInput))
+            {
+                myFiles.add(song);
+            }
+        }
+        SongsFragment.musicAdapter.updateList(myFiles);
+        return true;
     }
 }

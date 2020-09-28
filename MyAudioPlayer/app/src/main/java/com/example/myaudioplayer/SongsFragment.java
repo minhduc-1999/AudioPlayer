@@ -15,7 +15,7 @@ import static com.example.myaudioplayer.MainActivity.musicFiles;
 public class SongsFragment extends Fragment {
 
     RecyclerView recyclerView;
-    MusicAdapter musicAdapter;
+    static MusicAdapter musicAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
