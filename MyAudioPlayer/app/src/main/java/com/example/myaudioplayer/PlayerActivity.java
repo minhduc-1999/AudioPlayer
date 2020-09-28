@@ -316,7 +316,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         if (art != null) {
             bitmap = BitmapFactory.decodeByteArray(art, 0, art.length);
             ImageAnimation(this, cover_art, bitmap);
-            Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
+            /*Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
                 @Override
                 public void onGenerated(@Nullable Palette palette) {
                     Palette.Swatch swatch = palette.getDominantSwatch();
@@ -348,15 +348,17 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
                         artist_name.setTextColor(Color.DKGRAY);
                     }
                 }
-            });
+            });*/
         } else {
-            Glide.with(this).asBitmap().load(R.drawable.music_default).into(cover_art);
-            ImageView gredient = findViewById(R.id.imageViewGradient);
+            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.music_default);
+            ImageAnimation(this, cover_art, bitmap);
+            //Glide.with(this).asBitmap().load(R.drawable.music_default).into(cover_art);
+            /*ImageView gredient = findViewById(R.id.imageViewGradient);
             RelativeLayout mContainer = findViewById(R.id.mContainer);
             gredient.setBackgroundResource(R.drawable.gradient_bg);
             mContainer.setBackgroundResource(R.drawable.main_bg);
             song_name.setTextColor(Color.WHITE);
-            artist_name.setTextColor(Color.DKGRAY);
+            artist_name.setTextColor(Color.DKGRAY);*/
         }
 
 
