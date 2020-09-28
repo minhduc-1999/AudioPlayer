@@ -1,4 +1,5 @@
 package com.example.myaudioplayer;
+
 import android.content.Context;
 import android.content.Intent;
 import android.media.MediaMetadataRetriever;
@@ -16,15 +17,16 @@ import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
 
-public class AlbumDetailsAdapter extends RecyclerView.Adapter<AlbumDetailsAdapter.MyHolder>{
+public class AlbumDetailsAdapter extends RecyclerView.Adapter<AlbumDetailsAdapter.MyHolder> {
     private Context mContext;
     static ArrayList<MusicFiles> albumFiles;
     View view;
-    public AlbumDetailsAdapter (Context mContext, ArrayList <MusicFiles> albumFiles)
-    {
+
+    public AlbumDetailsAdapter(Context mContext, ArrayList<MusicFiles> albumFiles) {
         this.mContext = mContext;
         this.albumFiles = albumFiles;
     }
+
     @NonNull
     @Override
     public AlbumDetailsAdapter.MyHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -37,18 +39,15 @@ public class AlbumDetailsAdapter extends RecyclerView.Adapter<AlbumDetailsAdapte
         final MusicFiles aFile = albumFiles.get(position);
         holder.album_name.setText(aFile.getTitle());
         byte[] image = getAlbumArt(aFile.getPath());
-        if (image != null)
-        {
+        if (image != null) {
             Glide.with(mContext).asBitmap().load(image).into(holder.album_image);
-        }
-        else
-        {
+        } else {
             Glide.with(mContext).load(R.drawable.music_default).into(holder.album_image);
         }
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent (mContext, PlayerActivity.class);
+                Intent intent = new Intent(mContext, PlayerActivity.class);
                 intent.putExtra("sender", "albumDetails");
                 intent.putExtra("position", position);
                 mContext.startActivity(intent);
@@ -62,18 +61,18 @@ public class AlbumDetailsAdapter extends RecyclerView.Adapter<AlbumDetailsAdapte
         return albumFiles.size();
     }
 
-    public class MyHolder extends RecyclerView.ViewHolder{
+    public class MyHolder extends RecyclerView.ViewHolder {
         ImageView album_image;
         TextView album_name;
-        public MyHolder(@NonNull View itemView){
+
+        public MyHolder(@NonNull View itemView) {
             super(itemView);
             album_image = itemView.findViewById(R.id.music_img);
             album_name = itemView.findViewById(R.id.music_file_name);
         }
     }
 
-    private byte[] getAlbumArt(String uri)
-    {
+    private byte[] getAlbumArt(String uri) {
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         retriever.setDataSource(uri);
         byte[] art = retriever.getEmbeddedPicture();

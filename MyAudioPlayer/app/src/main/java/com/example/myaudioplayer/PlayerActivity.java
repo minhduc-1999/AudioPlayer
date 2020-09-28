@@ -351,7 +351,7 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
                 }
             });
         } else {
-            Glide.with(this).asBitmap().load(R.drawable.bewedoc).into(cover_art);
+            Glide.with(this).asBitmap().load(R.drawable.music_default).into(cover_art);
             ImageView gredient = findViewById(R.id.imageViewGradient);
             RelativeLayout mContainer = findViewById(R.id.mContainer);
             gredient.setBackgroundResource(R.drawable.gradient_bg);
