@@ -11,8 +11,99 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_above="@id/tab_layout"
+        android:layout_above="@id/now_playing_btn"
         android:id="@+id/viewpager"/>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/now_playing_btn"
+        android:background="@color/colorPrimary"
+        android:layout_above="@id/tab_layout">
+        <ProgressBar
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:id="@+id/seekBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
+            android:layout_marginTop="-6dp"
+            android:layout_marginBottom="-7dp"
+            android:progress="50"
+            android:progressBackgroundTint="@color/progress"
+            android:progressTint="@color/selectedColor"/>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/seekBar">
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_centerVertical="true"
+                android:layout_alignParentLeft="true"
+                android:scaleType="centerCrop"
+                android:src="@drawable/music_default"
+                android:id="@+id/cover_art"/>
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_toRightOf="@+id/cover_art"
+                android:id="@+id/song_ino">
+                <TextView
+                    android:id="@+id/song_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="fafdafdafdafdafda"
+                    android:textColor="@color/colorPrimaryText"
+                    android:textSize="16dp"/>
+                <TextView
+                    android:id="@+id/song_artist"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/song_name"
+                    android:text="fafdafdafdafdafda"
+                    android:textSize="12dp"
+                    android:textColor="@color/colorSecondaryText"/>
+            </RelativeLayout>
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_margin="5dp"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_toRightOf="@id/song_ino">
+                <ImageView
+                    android:id="@+id/id_pre"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="16dp"
+                    android:layout_toLeftOf="@id/play_pause"
+                    android:src="@drawable/ic_round_skip_previous_24" />
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:id="@+id/play_pause"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:backgroundTint="@color/colorPrimary"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:src="@drawable/ic_round_play_arrow_24"
+                    app:borderWidth="2.5dp" />
+
+                <ImageView
+                    android:id="@+id/id_next"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginLeft="16dp"
+                    android:layout_toRightOf="@id/play_pause"
+                    android:src="@drawable/ic_round_skip_next_24" />
+            </RelativeLayout>
+        </RelativeLayout>
+    </RelativeLayout>
     <com.google.android.material.tabs.TabLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -21,6 +112,9 @@
         app:tabSelectedTextColor="@color/selectedColor"
         app:tabIndicatorHeight="0dp"
         app:tabTextAppearance="@style/MyCustomTabTextAppearance"
+        android:layout_marginBottom="-5dp"
+        android:layout_marginTop="-8dp"
+        android:translationZ="-4dp"
         android:background="@color/colorPrimaryDark"/>
     <!--app:tabIndicatorFullWidth="true"
     app:tabIndicatorGravity="center"
