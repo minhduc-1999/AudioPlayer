@@ -40,6 +40,7 @@ import static com.example.myaudioplayer.MainActivity.shuffleBoolean;
 import static com.example.myaudioplayer.MusicAdapter.mFiles;
 
 public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener {
+    PlayAudioService playerService;
     TextView song_name, artist_name, duration_played, duration_total;
     ImageView cover_art, nextBtn, preBtn, backBtn, shuffleBtn, repeatBtn, menuBtn;
     FloatingActionButton playPauseBtn;
