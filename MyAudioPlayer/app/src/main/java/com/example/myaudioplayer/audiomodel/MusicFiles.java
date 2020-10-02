@@ -1,4 +1,4 @@
-package com.example.myaudioplayer;
+package com.example.myaudioplayer.audiomodel;
 
 public class MusicFiles {
     private String path;
