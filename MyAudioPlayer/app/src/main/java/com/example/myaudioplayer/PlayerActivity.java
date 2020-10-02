@@ -1,6 +1,7 @@
 package com.example.myaudioplayer;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -8,6 +9,7 @@ import androidx.lifecycle.ViewModelProviders;
 import androidx.palette.graphics.Palette;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -15,8 +17,10 @@ import android.graphics.drawable.GradientDrawable;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -29,6 +33,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.example.myaudioplayer.audiomodel.MusicFiles;
+import com.example.myaudioplayer.audioservice.AudioService;
 import com.example.myaudioplayer.viewmodel.PlayerActivityViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -45,14 +50,14 @@ import static com.example.myaudioplayer.MainActivity.shuffleBoolean;
 import static com.example.myaudioplayer.MusicAdapter.mFiles;
 
 public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener {
-    PlayerActivityViewModel viewModel;
+    private PlayerActivityViewModel viewModel;
+    private AudioService audioService;
 
     TextView song_name, artist_name, duration_played, duration_total;
     ImageView cover_art, nextBtn, preBtn, backBtn, shuffleBtn, repeatBtn, menuBtn;
     FloatingActionButton playPauseBtn;
     SeekBar seekBar;
 
-    static MediaPlayer mediaPlayer;
     private Handler handler = new Handler();
     private Thread playThread, preThread, nextThread;
 
@@ -60,15 +65,19 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
+
         viewModel = ViewModelProviders.of(this).get(PlayerActivityViewModel.class);
         registerLiveDataListenner();
+
         initView();
+
         getIntentMethod();
+
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (mediaPlayer != null && fromUser) {
-                    mediaPlayer.seekTo(progress * 1000);
+                if (fromUser && audioService != null) {
+                    audioService.seekTo(progress * 1000);
                 }
             }
 
@@ -85,8 +94,8 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
         PlayerActivity.this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (mediaPlayer != null) {
-                    int mCurrentPosition = mediaPlayer.getCurrentPosition() / 1000;
+                if (audioService != null) {
+                    int mCurrentPosition = audioService.getCurrentDuration() / 1000;
                     seekBar.setProgress(mCurrentPosition);
                     duration_played.setText(formattedTime(mCurrentPosition));
                 }
@@ -121,27 +130,56 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 
     private void registerLiveDataListenner() {
         viewModel.getCurPos().observe(this, new Observer<Integer>() {
+            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void onChanged(Integer integer) {
                 if (integer != -1) {
-                    Uri uri = viewModel.getAudioFileUri(integer);
-                    mediaPlayer = MediaPlayer.create(getApplicationContext(), uri);
-                    mediaPlayer.setOnCompletionListener(PlayerActivity.this);
-                    mediaPlayer.start();
-                    setMetaData(viewModel.getMetadata(integer));
+                    if(audioService != null) {
+                        Uri uri = viewModel.getAudioFileUri(integer);
+                        audioService.changeAudio(uri);
+                        setMetaData(viewModel.getMetadata(integer));
+                    }
+                }
+            }
+        });
+        viewModel.getmBinder().observe(this, new Observer<AudioService.AudioBinder>() {
+            @Override
+            public void onChanged(AudioService.AudioBinder audioBinder) {
+                if (audioBinder != null) {
+                    audioService = audioBinder.getService();
+                }
+                else
+                {
+                    audioService = null;
                 }
             }
         });
     }
 
+    private void startAudioService(String uri) {
+        Intent serviceIntent = new Intent(this, AudioService.class);
+        serviceIntent.setAction(AudioService.ACTION_PLAY);
+        serviceIntent.putExtra("uri", uri);
+        startService(serviceIntent);
+        bindService();
+    }
+
+    private void bindService() {
+        Intent serviceIntent = new Intent(this, AudioService.class);
+        bindService(serviceIntent, viewModel.getServiceConnection(), Context.BIND_AUTO_CREATE);
+    }
+
     private void setMetaData(MusicFiles musicFiles) {
-        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        retriever.setDataSource(musicFiles.getPath());
+        seekBar.setProgress(0);
+        duration_played.setText(formattedTime(0));
         int durationTotal = Integer.parseInt(musicFiles.getDuration()) / 1000;
         duration_total.setText(formattedTime(durationTotal));
         song_name.setText(musicFiles.getTitle());
         artist_name.setText(musicFiles.getArtist());
         seekBar.setMax(durationTotal);
+
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        retriever.setDataSource(musicFiles.getPath());
         byte[] art = retriever.getEmbeddedPicture();
         Bitmap bitmap;
         if (art != null) {
@@ -151,6 +189,14 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.music_default);
             ImageAnimation(this, cover_art, bitmap);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (viewModel.getmBinder() != null) {
+            unbindService(viewModel.getServiceConnection());
+        }
+        super.onDestroy();
     }
 
     @Override
@@ -179,12 +225,8 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 
     private void nextBtnClick() {
         int position;
-        if (mediaPlayer != null ) {
-            mediaPlayer.stop();
-            mediaPlayer.release();
-        }
         viewModel.nextSong(shuffleBoolean, repeatBoolean);
-        playPauseBtn.setBackgroundResource(R.drawable.ic_round_pause_24);
+        playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
     }
 
 
@@ -206,12 +248,8 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 
     private void preBtnClick() {
         int position;
-        if (mediaPlayer != null ) {
-            mediaPlayer.stop();
-            mediaPlayer.release();
-        }
         viewModel.nextSong(shuffleBoolean, repeatBoolean);
-        playPauseBtn.setBackgroundResource(R.drawable.ic_round_pause_24);
+        playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
     }
 
     private void playThreadBtn() {
@@ -231,13 +269,13 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
     }
 
     private void playPauseBtnClick() {
-        if (mediaPlayer.isPlaying()) {
+        if (audioService.isPlaying()) {
             playPauseBtn.setImageResource(R.drawable.ic_round_play_arrow_24);
-            mediaPlayer.pause();
+            audioService.playPauseAudio(AudioService.ACTION_PAUSE);
             /*seek bar + runOnUIThread*/
         } else {
             playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
-            mediaPlayer.start();
+            audioService.playPauseAudio(AudioService.ACTION_PLAY);
             /*seek bar + runOnUIThread*/
         }
     }
@@ -264,7 +302,8 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             viewModel.getListSong().setValue(mFiles);
         if(viewModel.getListSong().getValue() != null)
             playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
-        viewModel.getCurPos().setValue(position);
+        startAudioService(viewModel.getListSong().getValue().get(position).getPath());
+        setMetaData(viewModel.getMetadata(position));
     }
 
     private void initView() {
