@@ -20,6 +20,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/now_playing_collapse"
         android:background="@color/colorPrimary"
+        android:visibility="gone"
         android:layout_above="@id/tab_layout">
         <ProgressBar
             style="@style/Widget.AppCompat.ProgressBar.Horizontal"

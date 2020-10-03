@@ -55,8 +55,7 @@
             android:id="@+id/cover_art"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:src="@drawable/music_default" />
+            android:scaleType="centerCrop"/>
 
         <ImageView
             android:id="@+id/imageViewGradient"
@@ -83,7 +82,6 @@
             android:ellipsize="end"
             android:gravity="center_horizontal"
             android:singleLine="true"
-            android:text="This is song name"
             android:textColor="@color/colorAccent"
             android:textSize="22sp"
             android:textStyle="bold" />
@@ -97,7 +95,6 @@
             android:ellipsize="end"
             android:gravity="center_horizontal"
             android:singleLine="true"
-            android:text="This is song artist"
             android:textColor="@color/colorAccent"
             android:textSize="18sp" />
     </RelativeLayout>
@@ -172,7 +169,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
             android:layout_marginLeft="20dp"
-            android:text="1:28"
+            android:text="00:00"
             android:textColor="@color/colorAccent" />
 
         <TextView
@@ -181,7 +178,7 @@
             android:layout_height="wrap_content"
             android:layout_alignParentRight="true"
             android:layout_marginRight="20dp"
-            android:text="5:28"
+            android:text="00:00"
             android:textColor="@color/colorAccent" />
 
         <SeekBar

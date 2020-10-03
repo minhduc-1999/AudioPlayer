@@ -19,16 +19,17 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class AudioService extends Service implements MediaPlayer.OnCompletionListener {
-    public static final String ACTION_PLAY = "ACTION_PLAY";
-    public static final String ACTION_PAUSE = "ACTION_PASUE";
     public static final String BRC_SERVICE_FILTER = "BRC_SERVICE";
     public static final String BRC_AUDIO_CHANGE = "BRC_AUDIO_CHANGE";
-    public static final String BRC_AUDIO_TIME_DISCONTINUITY = "BRC_AUDIO_TIME_DISCONTINUITY";
     public static final String BRC_PLAYING_STATE_CHANGE = "BRC_PLAYING_STATE_CHANGE";
+    public static final String STATE_PLAY = "STATE_PLAY";
+    public static final String STATE_PAUSE = "STATE_PAUSE";
+    public static final String STATE_NONE = "STATE_NONE";
 
     private ArrayList<MusicFiles> mPlaylist;
     private int curSongPos;
-    private boolean isPlaying;
+    //private boolean isPlaying;
+    private String state;
     private boolean isShuffle, isRepeat;
 
     private MediaPlayer mediaPlayer;
@@ -55,6 +56,10 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
 
     }
 
+    public String getState() {
+        return state;
+    }
+
     @Override
     public void onCreate() {
         /*mediaPlayer = new MediaPlayer();
@@ -66,6 +71,7 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
         );*/
         //mediaPlayer.setOnPreparedListener(this);
         mBinder = new AudioBinder();
+        state = STATE_NONE;
     }
 
     @Override
@@ -100,17 +106,15 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
             mediaPlayer.seekTo(pos);
     }
 
-    public void playPauseAudio(String action) {
-        if (mediaPlayer == null)
+    public void playPauseAudio() {
+        if (mediaPlayer == null || state == STATE_NONE)
             return;
-        if (action.equals(ACTION_PLAY)) {
+        if (state == STATE_PAUSE) {
             mediaPlayer.start();
-            isPlaying = true;
-            sendServiceBroadcast(BRC_SERVICE_FILTER, BRC_PLAYING_STATE_CHANGE);
+            setState(STATE_PLAY);
         } else {
             mediaPlayer.pause();
-            isPlaying = false;
-            sendServiceBroadcast(BRC_SERVICE_FILTER, BRC_PLAYING_STATE_CHANGE);
+            setState(STATE_PAUSE);
         }
     }
 
@@ -120,26 +124,26 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
         return -1;
     }
 
-    public boolean isPlaying() {
-        if (mediaPlayer != null)
-            return mediaPlayer.isPlaying();
-        return false;
+    private void setState(String state) {
+        if (this.state == state)
+            return;
+        this.state = state;
+        sendServiceBroadcast(BRC_SERVICE_FILTER, BRC_PLAYING_STATE_CHANGE);
     }
 
     public void changeAudio(int pos) {
         if (mediaPlayer != null) {
             mediaPlayer.stop();
             mediaPlayer.release();
+            setState(STATE_NONE);
         }
         Uri uri = Uri.parse(mPlaylist.get(pos).getPath());
         mediaPlayer = MediaPlayer.create(this, uri);
         mediaPlayer.setOnCompletionListener(this);
         mediaPlayer.start();
-        isPlaying = true;
+        setState(STATE_PLAY);
         curSongPos = pos;
-        sendServiceBroadcast(BRC_SERVICE_FILTER, BRC_PLAYING_STATE_CHANGE);
         sendServiceBroadcast(BRC_SERVICE_FILTER, BRC_AUDIO_CHANGE);
-        //prepareAudio(uri);
     }
 
     @Override

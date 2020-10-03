@@ -137,7 +137,8 @@ public class PlayerActivity extends AppCompatActivity {
                         viewModel.getCurSong().setValue(audioService.getCurSong());
                         break;
                     case AudioService.BRC_PLAYING_STATE_CHANGE:
-                        if (audioService.isPlaying())
+                        String state = audioService.getState();
+                        if (state.equals(AudioService.STATE_PLAY))
                             playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
                         else
                             playPauseBtn.setImageResource(R.drawable.ic_round_play_arrow_24);
@@ -296,13 +297,13 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void playPauseBtnClick() {
         if (isBound) {
-            if (audioService.isPlaying()) {
+            if (audioService.getState() == AudioService.STATE_PLAY) {
                 //playPauseBtn.setImageResource(R.drawable.ic_round_play_arrow_24);
-                audioService.playPauseAudio(AudioService.ACTION_PAUSE);
+                audioService.playPauseAudio();
                 /*seek bar + runOnUIThread*/
             } else {
                 //playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
-                audioService.playPauseAudio(AudioService.ACTION_PLAY);
+                audioService.playPauseAudio();
                 /*seek bar + runOnUIThread*/
             }
         }
@@ -325,7 +326,7 @@ public class PlayerActivity extends AppCompatActivity {
         int position = getIntent().getIntExtra("position", -1);
         String sender = getIntent().getStringExtra("sender");
         boolean isCreateService = getIntent().getBooleanExtra("createService", false);
-        boolean isPlaying = getIntent().getBooleanExtra("isPlaying", false);
+        String state = getIntent().getStringExtra("state");
         if (sender != null && sender.equals("albumDetails")) {
             this.isAlbumPlaylist = true;
         } else
@@ -335,7 +336,7 @@ public class PlayerActivity extends AppCompatActivity {
         } else {
             isBindToCreatedService = false;
         }
-        if (isPlaying)
+        if (state.equals(AudioService.STATE_PLAY))
             playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
         else
             playPauseBtn.setImageResource(R.drawable.ic_round_play_arrow_24);

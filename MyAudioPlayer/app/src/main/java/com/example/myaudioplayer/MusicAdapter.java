@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.myaudioplayer.audiomodel.MusicFiles;
+import com.example.myaudioplayer.audioservice.AudioService;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.File;
@@ -60,6 +61,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MyViewHolder
                 Intent intent = new Intent(mContext, PlayerActivity.class);
                 intent.putExtra("position", position);
                 intent.putExtra("createService", true);
+                intent.putExtra("state", AudioService.STATE_PLAY);
                 mContext.startActivity(intent);
             }
         });

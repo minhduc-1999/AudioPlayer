@@ -63,8 +63,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private ImageView cover_art;
     private TextView song_name;
     private TextView artist_name;
+    private ViewPager viewPager;
+    private TabLayout tabLayout;
 
     private boolean isBound = false;
+    private boolean isNowPlayingTabShow = false;
 
     private ImageView pre_btn;
     private ImageView next_btn;
@@ -147,10 +150,28 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                         //play_pause_btn.setImageResource(R.drawable.ic_round_pause_24);
                         break;
                     case AudioService.BRC_PLAYING_STATE_CHANGE:
-                        if (audioService.isPlaying())
+                        String state = audioService.getState();
+                        if (state.equals(AudioService.STATE_PLAY)) {
                             play_pause_btn.setImageResource(R.drawable.ic_round_pause_24);
-                        else
+                            if (isNowPlayingTabShow == false) {
+                                nowPlayingCollapse.setVisibility(View.VISIBLE);
+                                isNowPlayingTabShow = true;
+                            }
+                        } else if (state.equals( AudioService.STATE_PAUSE)) {
                             play_pause_btn.setImageResource(R.drawable.ic_round_play_arrow_24);
+                            if (isNowPlayingTabShow == false)
+                                if (isNowPlayingTabShow == false) {
+                                    nowPlayingCollapse.setVisibility(View.VISIBLE);
+                                    isNowPlayingTabShow = true;
+                                }
+                        } else {
+                            if (isNowPlayingTabShow == true) {
+                                nowPlayingCollapse.setVisibility(View.GONE);
+                                isNowPlayingTabShow = false;
+                            }
+                        }
+                        break;
+
                     default:
                 }
 
@@ -179,12 +200,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
                     if (audioService != null) {
                         intent.putExtra("createService", false);
-                        if (audioService.isPlaying())
-                            intent.putExtra("isPlaying", true);
-                        else
-                            intent.putExtra("isPlaying", false);
-                    }
-                    else {
+                        String state = audioService.getState();
+                        intent.putExtra("state", state);
+
+                    } else {
                         intent.putExtra("createService", true);
                     }
                     startActivity(intent);
@@ -211,11 +230,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             @Override
             public void onClick(View v) {
                 if (isBound) {
-                    if (audioService.isPlaying()) {
-                        audioService.playPauseAudio(AudioService.ACTION_PAUSE);
+                    if (audioService.getState() == AudioService.STATE_PLAY) {
+                        audioService.playPauseAudio();
                         //play_pause_btn.setImageResource(R.drawable.ic_round_play_arrow_24);
                     } else {
-                        audioService.playPauseAudio(AudioService.ACTION_PLAY);
+                        audioService.playPauseAudio();
                         //play_pause_btn.setImageResource(R.drawable.ic_round_pause_24);
                     }
                 }
@@ -264,8 +283,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     private void initViewPager() {
-        ViewPager viewPager = findViewById(R.id.viewpager);
-        TabLayout tabLayout = findViewById(R.id.tab_layout);
+        viewPager = findViewById(R.id.viewpager);
+        tabLayout = findViewById(R.id.tab_layout);
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
         viewPagerAdapter.addFragments(new SongsFragment(), "Songs");
         viewPagerAdapter.addFragments(new AlbumFragment(), "Albums");
