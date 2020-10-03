@@ -46,6 +46,7 @@ public class PlayerActivity extends AppCompatActivity {
     ImageView cover_art, nextBtn, preBtn, backBtn, shuffleBtn, repeatBtn, menuBtn;
     FloatingActionButton playPauseBtn;
     SeekBar seekBar;
+    boolean isBindToCreatedService = false;
     private int startPosition;
     private boolean isAlbumPlaylist;
     private Handler handler = new Handler();
@@ -71,6 +72,7 @@ public class PlayerActivity extends AppCompatActivity {
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser && audioService != null) {
                     audioService.seekTo(progress * 1000);
+                    duration_played.setText(formattedTime(progress));
                 }
             }
 
@@ -134,6 +136,11 @@ public class PlayerActivity extends AppCompatActivity {
                     case AudioService.BRC_AUDIO_CHANGE:
                         viewModel.getCurSong().setValue(audioService.getCurSong());
                         break;
+                    case AudioService.BRC_PLAYING_STATE_CHANGE:
+                        if (audioService.isPlaying())
+                            playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
+                        else
+                            playPauseBtn.setImageResource(R.drawable.ic_round_play_arrow_24);
                     default:
                 }
 
@@ -154,7 +161,10 @@ public class PlayerActivity extends AppCompatActivity {
                         audioService.setPlaylist(albums);
                     else
                         audioService.setPlaylist(playlists);
-                    audioService.changeAudio(startPosition);
+                    if (isBindToCreatedService) {
+                        setMetaData(audioService.getCurSong(), audioService.getCurrentDuration() / 1000);
+                    } else if (startPosition != -1)
+                        audioService.changeAudio(startPosition);
                 } else {
                     audioService = null;
                     isBound = false;
@@ -165,7 +175,7 @@ public class PlayerActivity extends AppCompatActivity {
             @Override
             public void onChanged(MusicFiles musicFiles) {
                 if (musicFiles != null)
-                    setMetaData(musicFiles);
+                    setMetaData(musicFiles, -1);
             }
         });
     }
@@ -175,14 +185,21 @@ public class PlayerActivity extends AppCompatActivity {
         bindService(serviceIntent, viewModel.getServiceConnection(), Context.BIND_AUTO_CREATE);
     }
 
-    private void setMetaData(MusicFiles musicFiles) {
-        seekBar.setProgress(0);
-        duration_played.setText(formattedTime(0));
+    private void setMetaData(MusicFiles musicFiles, int progress) {
         int durationTotal = Integer.parseInt(musicFiles.getDuration()) / 1000;
         duration_total.setText(formattedTime(durationTotal));
+        seekBar.setMax(durationTotal);
+        if (progress == -1) {
+            seekBar.setProgress(0);
+            duration_played.setText(formattedTime(0));
+        }
+        else {
+            seekBar.setProgress(progress);
+            duration_played.setText(formattedTime(progress));
+        }
         song_name.setText(musicFiles.getTitle());
         artist_name.setText(musicFiles.getArtist());
-        seekBar.setMax(durationTotal);
+
 
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         retriever.setDataSource(musicFiles.getPath());
@@ -233,7 +250,7 @@ public class PlayerActivity extends AppCompatActivity {
     private void nextBtnClick() {
         if (isBound) {
             audioService.nextSong();
-            playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
+            //playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
         }
     }
 
@@ -257,7 +274,7 @@ public class PlayerActivity extends AppCompatActivity {
     private void preBtnClick() {
         if (isBound) {
             audioService.preSong();
-            playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
+            //playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
         }
     }
 
@@ -280,11 +297,11 @@ public class PlayerActivity extends AppCompatActivity {
     private void playPauseBtnClick() {
         if (isBound) {
             if (audioService.isPlaying()) {
-                playPauseBtn.setImageResource(R.drawable.ic_round_play_arrow_24);
+                //playPauseBtn.setImageResource(R.drawable.ic_round_play_arrow_24);
                 audioService.playPauseAudio(AudioService.ACTION_PAUSE);
                 /*seek bar + runOnUIThread*/
             } else {
-                playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
+                //playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
                 audioService.playPauseAudio(AudioService.ACTION_PLAY);
                 /*seek bar + runOnUIThread*/
             }
@@ -307,12 +324,18 @@ public class PlayerActivity extends AppCompatActivity {
     private void getIntentMethod() {
         int position = getIntent().getIntExtra("position", -1);
         String sender = getIntent().getStringExtra("sender");
-        boolean isPlayed = getIntent().getBooleanExtra("isPlayed", false);
+        boolean isCreateService = getIntent().getBooleanExtra("createService", false);
+        boolean isPlaying = getIntent().getBooleanExtra("isPlaying", false);
         if (sender != null && sender.equals("albumDetails")) {
             this.isAlbumPlaylist = true;
         } else
             this.isAlbumPlaylist = false;
-        if (!isPlayed)
+        if (!isCreateService) {
+            isBindToCreatedService = true;
+        } else {
+            isBindToCreatedService = false;
+        }
+        if (isPlaying)
             playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
         else
             playPauseBtn.setImageResource(R.drawable.ic_round_play_arrow_24);

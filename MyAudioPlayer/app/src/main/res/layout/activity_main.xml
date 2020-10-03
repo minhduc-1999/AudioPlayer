@@ -11,8 +11,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_above="@id/now_playing_collapse"
+        android:layout_above="@+id/now_playing_collapse"
         android:id="@+id/viewpager"/>
+    <!--        android:layout_above="@id/now_playing_collapse"-->
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -5,6 +5,6 @@
     <color name="colorAccent">#D1CBCB</color>
     <color name="selectedColor">#03A9F4</color>
     <color name="progress">#A6A2A0</color>
-    <color name="colorPrimaryText">#050505</color>
-    <color name="colorSecondaryText">#887C7B7B</color>
+    <color name="colorPrimaryText">#FFFFFF</color>
+    <color name="colorSecondaryText">#88BDBDBD</color>
 </resources>

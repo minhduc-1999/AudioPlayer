@@ -3,11 +3,13 @@ package com.example.myaudioplayer.audioservice;
 import android.app.Service;
 import android.content.Intent;
 import android.media.MediaPlayer;
+import android.media.MediaTimestamp;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -21,7 +23,8 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
     public static final String ACTION_PAUSE = "ACTION_PASUE";
     public static final String BRC_SERVICE_FILTER = "BRC_SERVICE";
     public static final String BRC_AUDIO_CHANGE = "BRC_AUDIO_CHANGE";
-    public static final String BRC_AUDIO_COMPLETE = "BRC_AUDIO_COMPLETE";
+    public static final String BRC_AUDIO_TIME_DISCONTINUITY = "BRC_AUDIO_TIME_DISCONTINUITY";
+    public static final String BRC_PLAYING_STATE_CHANGE = "BRC_PLAYING_STATE_CHANGE";
 
     private ArrayList<MusicFiles> mPlaylist;
     private int curSongPos;
@@ -52,7 +55,6 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
 
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public void onCreate() {
         /*mediaPlayer = new MediaPlayer();
@@ -66,7 +68,6 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
         mBinder = new AudioBinder();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
@@ -100,15 +101,17 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
     }
 
     public void playPauseAudio(String action) {
-        if(mediaPlayer == null)
+        if (mediaPlayer == null)
             return;
         if (action.equals(ACTION_PLAY)) {
             mediaPlayer.start();
             isPlaying = true;
-        }
-        else
+            sendServiceBroadcast(BRC_SERVICE_FILTER, BRC_PLAYING_STATE_CHANGE);
+        } else {
             mediaPlayer.pause();
-        isPlaying = false;
+            isPlaying = false;
+            sendServiceBroadcast(BRC_SERVICE_FILTER, BRC_PLAYING_STATE_CHANGE);
+        }
     }
 
     public int getCurrentDuration() {
@@ -134,6 +137,7 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
         mediaPlayer.start();
         isPlaying = true;
         curSongPos = pos;
+        sendServiceBroadcast(BRC_SERVICE_FILTER, BRC_PLAYING_STATE_CHANGE);
         sendServiceBroadcast(BRC_SERVICE_FILTER, BRC_AUDIO_CHANGE);
         //prepareAudio(uri);
     }
@@ -185,6 +189,7 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
         Random random = new Random();
         return random.nextInt(i + 1);
     }
+
     public class AudioBinder extends Binder {
         public AudioService getService() {
             return AudioService.this;

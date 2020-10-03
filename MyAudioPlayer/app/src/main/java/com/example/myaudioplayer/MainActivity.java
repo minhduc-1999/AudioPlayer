@@ -14,7 +14,9 @@ import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.provider.MediaStore;
 import android.view.Menu;
@@ -29,6 +31,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
@@ -70,6 +73,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private AudioService audioService;
     private BroadcastReceiver broadcastReceiver;
 
+    private Handler handler = new Handler();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -79,6 +84,17 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         doStartAudioService();
         initView();
         initEventListener();
+
+        MainActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (audioService != null && isBound) {
+                    int mCurrentPosition = audioService.getCurrentDuration() / 1000;
+                    seekBar.setProgress(mCurrentPosition);
+                }
+                handler.postDelayed(this, 1000);
+            }
+        });
     }
 
     @Override
@@ -128,7 +144,13 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 switch (info) {
                     case AudioService.BRC_AUDIO_CHANGE:
                         setMetaData(audioService.getCurSong());
+                        //play_pause_btn.setImageResource(R.drawable.ic_round_pause_24);
                         break;
+                    case AudioService.BRC_PLAYING_STATE_CHANGE:
+                        if (audioService.isPlaying())
+                            play_pause_btn.setImageResource(R.drawable.ic_round_pause_24);
+                        else
+                            play_pause_btn.setImageResource(R.drawable.ic_round_play_arrow_24);
                     default:
                 }
 
@@ -153,7 +175,20 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         nowPlayingCollapse.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                if (isBound) {
+                    Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
+                    if (audioService != null) {
+                        intent.putExtra("createService", false);
+                        if (audioService.isPlaying())
+                            intent.putExtra("isPlaying", true);
+                        else
+                            intent.putExtra("isPlaying", false);
+                    }
+                    else {
+                        intent.putExtra("createService", true);
+                    }
+                    startActivity(intent);
+                }
             }
         });
         pre_btn.setOnClickListener(new View.OnClickListener() {
@@ -178,10 +213,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 if (isBound) {
                     if (audioService.isPlaying()) {
                         audioService.playPauseAudio(AudioService.ACTION_PAUSE);
-                        play_pause_btn.setImageResource(R.drawable.ic_round_play_arrow_24);
+                        //play_pause_btn.setImageResource(R.drawable.ic_round_play_arrow_24);
                     } else {
                         audioService.playPauseAudio(AudioService.ACTION_PLAY);
-                        play_pause_btn.setImageResource(R.drawable.ic_round_pause_24);
+                        //play_pause_btn.setImageResource(R.drawable.ic_round_pause_24);
                     }
                 }
             }
