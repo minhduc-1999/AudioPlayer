@@ -3,10 +3,8 @@ package com.example.myaudioplayer;
 import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
-import android.media.MediaMetadata;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
-import android.net.wifi.p2p.WifiP2pManager;
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -21,14 +19,15 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.myaudioplayer.audiomodel.MusicFiles;
 import com.google.android.material.snackbar.Snackbar;
-import com.example.myaudioplayer.audiomodel.*;
+
 import java.io.File;
 import java.util.ArrayList;
 
 public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MyViewHolder> {
     private Context mContext;
-    static ArrayList<MusicFiles> mFiles;
+    private ArrayList<MusicFiles> mFiles;
 
     public MusicAdapter(Context mContext, ArrayList<MusicFiles> mFiles) {
         this.mContext = mContext;
@@ -60,6 +59,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MyViewHolder
             public void onClick(View v) {
                 Intent intent = new Intent(mContext, PlayerActivity.class);
                 intent.putExtra("position", position);
+                intent.putExtra("isPlayed", false);
                 mContext.startActivity(intent);
             }
         });

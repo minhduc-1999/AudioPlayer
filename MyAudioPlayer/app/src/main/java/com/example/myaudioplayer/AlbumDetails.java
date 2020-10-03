@@ -12,7 +12,7 @@ import com.bumptech.glide.Glide;
 import com.example.myaudioplayer.audiomodel.*;
 import java.util.ArrayList;
 
-import static com.example.myaudioplayer.MainActivity.musicFiles;
+import static com.example.myaudioplayer.MainActivity.playlists;
 
 
 public class AlbumDetails extends AppCompatActivity {
@@ -30,11 +30,11 @@ public class AlbumDetails extends AppCompatActivity {
         albumPhoto = findViewById(R.id.albumPhoto);
         albumName = getIntent().getStringExtra("albumName");
         int j=0;
-        for (int i=0; i< musicFiles.size(); i++)
+        for (int i=0; i< playlists.size(); i++)
         {
-            if (albumName.equals((musicFiles.get(i).getAlbum())))
+            if (albumName.equals((playlists.get(i).getAlbum())))
             {
-                albumSongs.add(j,musicFiles.get(i));
+                albumSongs.add(j,playlists.get(i));
                 j++;
             }
         }

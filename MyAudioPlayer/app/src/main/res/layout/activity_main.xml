@@ -11,12 +11,12 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:layout_above="@id/now_playing_btn"
+        android:layout_above="@id/now_playing_collapse"
         android:id="@+id/viewpager"/>
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/now_playing_btn"
+        android:id="@+id/now_playing_collapse"
         android:background="@color/colorPrimary"
         android:layout_above="@id/tab_layout">
         <ProgressBar
@@ -55,7 +55,7 @@
                     android:id="@+id/song_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="fafdafdafdafdafda"
+                    android:text="Song name"
                     android:textColor="@color/colorPrimaryText"
                     android:textSize="16dp"/>
                 <TextView
@@ -63,7 +63,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/song_name"
-                    android:text="fafdafdafdafdafda"
+                    android:text="Artist"
                     android:textSize="12dp"
                     android:textColor="@color/colorSecondaryText"/>
             </RelativeLayout>

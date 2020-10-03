@@ -1,38 +1,28 @@
 package com.example.myaudioplayer;
 
-import androidx.annotation.Nullable;
-import androidx.annotation.RequiresApi;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModelProvider;
-import androidx.lifecycle.ViewModelProviders;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.palette.graphics.Palette;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
 import android.media.MediaMetadataRetriever;
-import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.MediaStore;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.bumptech.glide.Glide;
 import com.example.myaudioplayer.audiomodel.MusicFiles;
@@ -40,22 +30,16 @@ import com.example.myaudioplayer.audioservice.AudioService;
 import com.example.myaudioplayer.viewmodel.PlayerActivityViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-
-import org.w3c.dom.Text;
-
 import java.util.ArrayList;
-import java.util.Random;
 
 import static com.example.myaudioplayer.AlbumDetailsAdapter.albumFiles;
-
-import static com.example.myaudioplayer.MainActivity.repeatBoolean;
-import static com.example.myaudioplayer.MainActivity.shuffleBoolean;
-import static com.example.myaudioplayer.MusicAdapter.mFiles;
+import static com.example.myaudioplayer.MainActivity.albums;
+import static com.example.myaudioplayer.MainActivity.playlists;
 
 public class PlayerActivity extends AppCompatActivity {
     private PlayerActivityViewModel viewModel;
     private AudioService audioService;
-
+    private boolean isBound = false;
     private BroadcastReceiver broadcastReceiver;
 
     TextView song_name, artist_name, duration_played, duration_total;
@@ -63,6 +47,7 @@ public class PlayerActivity extends AppCompatActivity {
     FloatingActionButton playPauseBtn;
     SeekBar seekBar;
     private int startPosition;
+    private boolean isAlbumPlaylist;
     private Handler handler = new Handler();
     private Thread playThread, preThread, nextThread;
 
@@ -76,7 +61,7 @@ public class PlayerActivity extends AppCompatActivity {
 
         registerBroadcastReceiver();
 
-        startAudioService();
+        bindAudioService();
         initView();
 
         getIntentMethod();
@@ -113,24 +98,28 @@ public class PlayerActivity extends AppCompatActivity {
         shuffleBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (shuffleBoolean) {
-                    shuffleBoolean = false;
-                    shuffleBtn.setImageResource(R.drawable.ic_round_shuffle_24_off);
-                } else {
-                    shuffleBoolean = true;
-                    shuffleBtn.setImageResource(R.drawable.ic_round_shuffle_24_on);
+                if (isBound) {
+                    if (audioService.isShuffle()) {
+                        audioService.setShuffle(false);
+                        shuffleBtn.setImageResource(R.drawable.ic_round_shuffle_24_off);
+                    } else {
+                        audioService.setShuffle(true);
+                        shuffleBtn.setImageResource(R.drawable.ic_round_shuffle_24_on);
+                    }
                 }
             }
         });
         repeatBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (repeatBoolean) {
-                    repeatBoolean = false;
-                    repeatBtn.setImageResource(R.drawable.ic_round_repeat_24_off);
-                } else {
-                    repeatBoolean = true;
-                    repeatBtn.setImageResource(R.drawable.ic_round_repeat_24_on);
+                if (isBound) {
+                    if (audioService.isRepeat()) {
+                        audioService.setRepeat(false);
+                        repeatBtn.setImageResource(R.drawable.ic_round_repeat_24_off);
+                    } else {
+                        audioService.setRepeat(true);
+                        repeatBtn.setImageResource(R.drawable.ic_round_repeat_24_on);
+                    }
                 }
             }
         });
@@ -140,7 +129,17 @@ public class PlayerActivity extends AppCompatActivity {
         broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                    nextBtnClick();
+                String info = intent.getStringExtra("info");
+                switch (info) {
+                    case AudioService.BRC_AUDIO_COMPLETE:
+
+                        break;
+                    case AudioService.BRC_AUDIO_CHANGE:
+                        viewModel.getCurSong().setValue(audioService.getCurSong());
+                        break;
+                    default:
+                }
+
             }
         };
         IntentFilter intentFilter = new IntentFilter(AudioService.BRC_SERVICE_FILTER);
@@ -148,41 +147,33 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void registerLiveDataListenner() {
-        viewModel.getCurPos().observe(this, new Observer<Integer>() {
-            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-            @Override
-            public void onChanged(Integer integer) {
-                if (integer != -1) {
-                    if(audioService != null) {
-                        Uri uri = viewModel.getAudioFileUri(integer);
-                        audioService.changeAudio(uri);
-                        setMetaData(viewModel.getMetadata(integer));
-                    }
-                }
-            }
-        });
         viewModel.getmBinder().observe(this, new Observer<AudioService.AudioBinder>() {
             @Override
             public void onChanged(AudioService.AudioBinder audioBinder) {
                 if (audioBinder != null) {
                     audioService = audioBinder.getService();
-                    viewModel.getCurPos().setValue(startPosition);
-                }
-                else
-                {
+                    isBound = true;
+                    if (isAlbumPlaylist)
+                        audioService.setPlaylist(albums);
+                    else
+                        audioService.setPlaylist(playlists);
+                    audioService.changeAudio(startPosition);
+                } else {
                     audioService = null;
+                    isBound = false;
                 }
+            }
+        });
+        viewModel.getCurSong().observe(this, new Observer<MusicFiles>() {
+            @Override
+            public void onChanged(MusicFiles musicFiles) {
+                if (musicFiles != null)
+                    setMetaData(musicFiles);
             }
         });
     }
 
-    private void startAudioService() {
-        Intent serviceIntent = new Intent(this, AudioService.class);
-        startService(serviceIntent);
-        bindService();
-    }
-
-    private void bindService() {
+    private void bindAudioService() {
         Intent serviceIntent = new Intent(this, AudioService.class);
         bindService(serviceIntent, viewModel.getServiceConnection(), Context.BIND_AUTO_CREATE);
     }
@@ -243,8 +234,10 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void nextBtnClick() {
-        viewModel.nextSong(shuffleBoolean, repeatBoolean);
-        playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
+        if (isBound) {
+            audioService.nextSong();
+            playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
+        }
     }
 
 
@@ -265,8 +258,10 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void preBtnClick() {
-        viewModel.preSong(shuffleBoolean, repeatBoolean);
-        playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
+        if (isBound) {
+            audioService.preSong();
+            playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
+        }
     }
 
     private void playThreadBtn() {
@@ -286,14 +281,16 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void playPauseBtnClick() {
-        if (audioService.isPlaying()) {
-            playPauseBtn.setImageResource(R.drawable.ic_round_play_arrow_24);
-            audioService.playPauseAudio(AudioService.ACTION_PAUSE);
-            /*seek bar + runOnUIThread*/
-        } else {
-            playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
-            audioService.playPauseAudio(AudioService.ACTION_PLAY);
-            /*seek bar + runOnUIThread*/
+        if (isBound) {
+            if (audioService.isPlaying()) {
+                playPauseBtn.setImageResource(R.drawable.ic_round_play_arrow_24);
+                audioService.playPauseAudio(AudioService.ACTION_PAUSE);
+                /*seek bar + runOnUIThread*/
+            } else {
+                playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
+                audioService.playPauseAudio(AudioService.ACTION_PLAY);
+                /*seek bar + runOnUIThread*/
+            }
         }
     }
 
@@ -313,12 +310,15 @@ public class PlayerActivity extends AppCompatActivity {
     private void getIntentMethod() {
         int position = getIntent().getIntExtra("position", -1);
         String sender = getIntent().getStringExtra("sender");
+        boolean isPlayed = getIntent().getBooleanExtra("isPlayed", false);
         if (sender != null && sender.equals("albumDetails")) {
-            viewModel.getListSong().setValue(albumFiles);
+            this.isAlbumPlaylist = true;
         } else
-            viewModel.getListSong().setValue(mFiles);
-        if(viewModel.getListSong().getValue() != null)
+            this.isAlbumPlaylist = false;
+        if (!isPlayed)
             playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
+        else
+            playPauseBtn.setImageResource(R.drawable.ic_round_play_arrow_24);
         startPosition = position;
         /*startAudioService(viewModel.getListSong().getValue().get(position).getPath());
         setMetaData(viewModel.getMetadata(position));*/

@@ -1,5 +1,26 @@
 package com.example.myaudioplayer;
 
+import android.Manifest;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.graphics.PorterDuff;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.IBinder;
+import android.provider.MediaStore;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -9,37 +30,115 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.lifecycle.MutableLiveData;
 import androidx.viewpager.widget.ViewPager;
 
-import android.Manifest;
-import android.content.Context;
-import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.graphics.PorterDuff;
-import android.net.Uri;
-import android.os.Bundle;
-import android.provider.MediaStore;
-import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.widget.TableLayout;
-import android.widget.Toast;
-
+import com.example.myaudioplayer.audiomodel.MusicFiles;
+import com.example.myaudioplayer.audioservice.AudioService;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
-import com.example.myaudioplayer.audiomodel.*;
-import java.io.Console;
+
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
     public static final int REQUEST_CODE = 1;
-    static ArrayList<MusicFiles> musicFiles;
-    static boolean shuffleBoolean = false, repeatBoolean = false;
+    static ArrayList<MusicFiles> playlists;
     static ArrayList<MusicFiles> albums = new ArrayList<>();
+
+    private RelativeLayout nowPlayingCollapse;
+    private SeekBar seekBar;
+    private ImageView cover_art;
+    private TextView song_name;
+    private TextView artist_name;
+
+
+
+    private ImageView pre_btn;
+    private ImageView next_btn;
+    private FloatingActionButton play_pause_btn;
+
+    private AudioService audioService;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         permission();
+        doStartAudioService();
+        initView();
+    }
+
+    @Override
+    protected void onDestroy() {
+        doStopAudioService();
+        super.onDestroy();
+    }
+
+    private void doStartAudioService() {
+        Intent serviceIntent = new Intent(this, AudioService.class);
+        startService(serviceIntent);
+        bindService();
+    }
+    private void doStopAudioService() {
+        unbindService(serviceConnection);
+        Intent serviceIntent = new Intent(this, AudioService.class);
+        stopService(serviceIntent);
+    }
+    private void bindService() {
+        Intent serviceIntent = new Intent(this, AudioService.class);
+        bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+    }
+    private ServiceConnection serviceConnection = new ServiceConnection () {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            AudioService.AudioBinder binder = (AudioService.AudioBinder) service;
+            audioService = binder.getService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            audioService = null;
+        }
+    };
+
+    private void initView() {
+        nowPlayingCollapse = findViewById(R.id.now_playing_collapse);
+        /*song_name = findViewById(R.id.song_name);
+        artist_name = findViewById(R.id.song_artist);
+        cover_art = findViewById(R.id.cover_art);
+        next_btn = findViewById(R.id.id_next);
+        pre_btn = findViewById(R.id.id_pre);
+        play_pause_btn = findViewById(R.id.play_pause);
+        seekBar = findViewById(R.id.seekBar);*/
+    }
+
+    private void initEventListener()
+    {
+        nowPlayingCollapse.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+        pre_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+        next_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+        play_pause_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
     }
 
     private void permission() {
@@ -48,7 +147,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         }
         else
         {
-            musicFiles = getAllAudio(this);
+            playlists = getAllAudio(this);
             initViewPager();
         }
     }
@@ -57,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_CODE) {
-            musicFiles = getAllAudio(this);
+            playlists = getAllAudio(this);
             initViewPager();
         }
         else {
@@ -183,7 +282,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     public boolean onQueryTextChange(String newText) {
         String userInput = newText.toLowerCase();
         ArrayList<MusicFiles> myFiles = new ArrayList<>();
-        for (MusicFiles song : musicFiles)
+        for (MusicFiles song : playlists)
         {
             if(song.getTitle().toLowerCase().contains(userInput))
             {

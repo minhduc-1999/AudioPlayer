@@ -10,7 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import static com.example.myaudioplayer.MainActivity.musicFiles;
+import static com.example.myaudioplayer.MainActivity.playlists;
 
 public class SongsFragment extends Fragment {
 
@@ -24,9 +24,9 @@ public class SongsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_songs, container, false);
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setHasFixedSize(true);
-        if (!(musicFiles.size() < 1))
+        if (!(playlists.size() < 1))
         {
-            musicAdapter = new MusicAdapter(getContext(), musicFiles);
+            musicAdapter = new MusicAdapter(getContext(), playlists);
             recyclerView.setAdapter(musicAdapter);
             recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
         }
