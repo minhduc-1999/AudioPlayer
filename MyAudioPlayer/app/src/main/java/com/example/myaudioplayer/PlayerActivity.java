@@ -47,7 +47,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import static com.example.myaudioplayer.AlbumDetailsAdapter.albumFiles;
-import static com.example.myaudioplayer.MainActivity.musicFiles;
+
 import static com.example.myaudioplayer.MainActivity.repeatBoolean;
 import static com.example.myaudioplayer.MainActivity.shuffleBoolean;
 import static com.example.myaudioplayer.MusicAdapter.mFiles;
@@ -62,7 +62,7 @@ public class PlayerActivity extends AppCompatActivity {
     ImageView cover_art, nextBtn, preBtn, backBtn, shuffleBtn, repeatBtn, menuBtn;
     FloatingActionButton playPauseBtn;
     SeekBar seekBar;
-
+    private int startPosition;
     private Handler handler = new Handler();
     private Thread playThread, preThread, nextThread;
 
@@ -76,6 +76,7 @@ public class PlayerActivity extends AppCompatActivity {
 
         registerBroadcastReceiver();
 
+        startAudioService();
         initView();
 
         getIntentMethod();
@@ -165,6 +166,7 @@ public class PlayerActivity extends AppCompatActivity {
             public void onChanged(AudioService.AudioBinder audioBinder) {
                 if (audioBinder != null) {
                     audioService = audioBinder.getService();
+                    viewModel.getCurPos().setValue(startPosition);
                 }
                 else
                 {
@@ -174,10 +176,8 @@ public class PlayerActivity extends AppCompatActivity {
         });
     }
 
-    private void startAudioService(String uri) {
+    private void startAudioService() {
         Intent serviceIntent = new Intent(this, AudioService.class);
-        serviceIntent.setAction(AudioService.ACTION_PLAY);
-        serviceIntent.putExtra("uri", uri);
         startService(serviceIntent);
         bindService();
     }
@@ -211,6 +211,7 @@ public class PlayerActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
         if (viewModel.getmBinder() != null) {
             unbindService(viewModel.getServiceConnection());
         }
@@ -242,7 +243,6 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void nextBtnClick() {
-        int position;
         viewModel.nextSong(shuffleBoolean, repeatBoolean);
         playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
     }
@@ -265,8 +265,7 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     private void preBtnClick() {
-        int position;
-        viewModel.nextSong(shuffleBoolean, repeatBoolean);
+        viewModel.preSong(shuffleBoolean, repeatBoolean);
         playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
     }
 
@@ -320,8 +319,9 @@ public class PlayerActivity extends AppCompatActivity {
             viewModel.getListSong().setValue(mFiles);
         if(viewModel.getListSong().getValue() != null)
             playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
-        startAudioService(viewModel.getListSong().getValue().get(position).getPath());
-        setMetaData(viewModel.getMetadata(position));
+        startPosition = position;
+        /*startAudioService(viewModel.getListSong().getValue().get(position).getPath());
+        setMetaData(viewModel.getMetadata(position));*/
     }
 
     private void initView() {

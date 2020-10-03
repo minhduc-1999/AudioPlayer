@@ -12,7 +12,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <service
-            android:name=".audioservice.AudioService"
+            android:name="com.example.myaudioplayer.audioservice.AudioService"
             android:enabled="true"
             android:exported="true"></service>
 

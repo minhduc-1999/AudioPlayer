@@ -19,7 +19,7 @@ import com.example.myaudioplayer.PlayerActivity;
 
 import java.io.IOException;
 
-public class AudioService extends Service implements MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener {
+public class AudioService extends Service implements MediaPlayer.OnCompletionListener {
     public static final String ACTION_PLAY = "ACTION_PLAY";
     public static final String ACTION_PAUSE = "ACTION_PASUE";
     public static final String BRC_SERVICE_FILTER = "BRC_SERVICE";
@@ -37,12 +37,26 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
+    public void onCreate() {
+        /*mediaPlayer = new MediaPlayer();
+        mediaPlayer.setAudioAttributes(
+                new AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .build()
+        );*/
+        //mediaPlayer.setOnPreparedListener(this);
+        mBinder = new AudioBinder();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        if (intent.getAction().equals(ACTION_PLAY)) {
+        /*if (intent.getAction().equals(ACTION_PLAY)) {
             Uri uri = Uri.parse(intent.getStringExtra("uri"));
             changeAudio(uri);
-        }
+        }*/
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -61,34 +75,6 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
         stopSelf();
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    @Override
-    public void onCreate() {
-        /*mediaPlayer = new MediaPlayer();
-        mediaPlayer.setAudioAttributes(
-                new AudioAttributes.Builder()
-                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                        .setUsage(AudioAttributes.USAGE_MEDIA)
-                        .build()
-        );*/
-        //mediaPlayer.setOnPreparedListener(this);
-        mBinder = new AudioBinder();
-    }
-
-    @Override
-    public void onPrepared(MediaPlayer mp) {
-        mp.start();
-    }
-
-    private void prepareAudio(Uri uri) {
-        try {
-            mediaPlayer.setDataSource(getApplicationContext(), uri);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        mediaPlayer.prepareAsync();
     }
 
     public void seekTo(int pos) {

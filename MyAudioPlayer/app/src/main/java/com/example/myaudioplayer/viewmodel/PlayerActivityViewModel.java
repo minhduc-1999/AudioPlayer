@@ -75,6 +75,16 @@ public class PlayerActivityViewModel extends AndroidViewModel {
         curPos.setValue(position);
     }
 
+    public void preSong(boolean isShuffle, boolean isRepeat) {
+        int position = -1;
+        if (isShuffle && !isRepeat) {
+            position = getRandom(listSong.getValue().size() - 1);
+        } else if (!isShuffle && !isRepeat) {
+            position = (curPos.getValue() - 1 + listSong.getValue().size()) % listSong.getValue().size();
+        }
+        curPos.setValue(position);
+    }
+
     private int getRandom(int i) {
         Random random = new Random();
         return random.nextInt(i + 1);
