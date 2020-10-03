@@ -49,6 +49,7 @@
                 android:layout_centerVertical="true"
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="20dp"
+                android:layout_toLeftOf="@id/control"
                 android:layout_toRightOf="@+id/cover_art"
                 android:id="@+id/song_ino">
                 <TextView
@@ -68,39 +69,36 @@
                     android:textColor="@color/colorSecondaryText"/>
             </RelativeLayout>
             <RelativeLayout
-                android:layout_width="wrap_content"
+                android:layout_width="130dp"
                 android:layout_margin="5dp"
-                android:layout_height="wrap_content"
-                android:layout_alignParentRight="true"
-                android:layout_toRightOf="@id/song_ino">
+                android:id="@+id/control"
+                android:layout_height="40dp"
+                android:layout_alignParentRight="true">
                 <ImageView
                     android:id="@+id/id_pre"
-                    android:layout_width="35dp"
-                    android:layout_height="35dp"
-                    android:layout_centerVertical="true"
-                    android:layout_marginRight="16dp"
-                    android:layout_toLeftOf="@id/play_pause"
-                    android:src="@drawable/ic_round_skip_previous_24" />
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:id="@+id/play_pause"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toLeftOf="@id/play_pause"
+                    android:layout_marginRight="10dp"
+                    android:src="@drawable/ic_round_skip_previous_24" />
+                <ImageView
+                    android:id="@+id/play_pause"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:layout_centerHorizontal="true"
                     android:layout_centerVertical="true"
                     android:backgroundTint="@color/colorPrimary"
-                    android:clickable="true"
-                    android:focusable="true"
                     android:src="@drawable/ic_round_play_arrow_24"
-                    app:borderWidth="2.5dp" />
-
+                    app:borderWidth="2dp" />
                 <ImageView
                     android:id="@+id/id_next"
-                    android:layout_width="35dp"
-                    android:layout_height="35dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
                     android:layout_centerVertical="true"
-                    android:layout_marginLeft="16dp"
                     android:layout_toRightOf="@id/play_pause"
-                    android:src="@drawable/ic_round_skip_next_24" />
+                    android:src="@drawable/ic_round_skip_next_24"/>
             </RelativeLayout>
         </RelativeLayout>
     </RelativeLayout>

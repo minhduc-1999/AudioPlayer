@@ -141,7 +141,6 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
     @Override
     public void onCompletion(MediaPlayer mp) {
         nextSong();
-        sendServiceBroadcast(BRC_SERVICE_FILTER, BRC_AUDIO_COMPLETE);
     }
 
     private void sendServiceBroadcast(String filter, String info) {

@@ -131,9 +131,6 @@ public class PlayerActivity extends AppCompatActivity {
             public void onReceive(Context context, Intent intent) {
                 String info = intent.getStringExtra("info");
                 switch (info) {
-                    case AudioService.BRC_AUDIO_COMPLETE:
-
-                        break;
                     case AudioService.BRC_AUDIO_CHANGE:
                         viewModel.getCurSong().setValue(audioService.getCurSong());
                         break;

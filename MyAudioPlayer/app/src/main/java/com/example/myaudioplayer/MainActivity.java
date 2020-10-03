@@ -1,13 +1,18 @@
 package com.example.myaudioplayer;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
+import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -17,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -31,8 +37,10 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.lifecycle.MutableLiveData;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.viewpager.widget.ViewPager;
 
+import com.bumptech.glide.Glide;
 import com.example.myaudioplayer.audiomodel.MusicFiles;
 import com.example.myaudioplayer.audioservice.AudioService;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -48,29 +56,34 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     static ArrayList<MusicFiles> albums = new ArrayList<>();
 
     private RelativeLayout nowPlayingCollapse;
-    private SeekBar seekBar;
+    private ProgressBar seekBar;
     private ImageView cover_art;
     private TextView song_name;
     private TextView artist_name;
 
-
+    private boolean isBound = false;
 
     private ImageView pre_btn;
     private ImageView next_btn;
-    private FloatingActionButton play_pause_btn;
+    private ImageView play_pause_btn;
 
     private AudioService audioService;
+    private BroadcastReceiver broadcastReceiver;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         permission();
+        registerBroadcastReceiver();
         doStartAudioService();
         initView();
+        initEventListener();
     }
 
     @Override
     protected void onDestroy() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
         doStopAudioService();
         super.onDestroy();
     }
@@ -80,41 +93,63 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         startService(serviceIntent);
         bindService();
     }
+
     private void doStopAudioService() {
         unbindService(serviceConnection);
         Intent serviceIntent = new Intent(this, AudioService.class);
         stopService(serviceIntent);
     }
+
     private void bindService() {
         Intent serviceIntent = new Intent(this, AudioService.class);
         bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
-    private ServiceConnection serviceConnection = new ServiceConnection () {
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             AudioService.AudioBinder binder = (AudioService.AudioBinder) service;
             audioService = binder.getService();
+            isBound = true;
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
             audioService = null;
+            isBound = false;
         }
     };
 
-    private void initView() {
-        nowPlayingCollapse = findViewById(R.id.now_playing_collapse);
-        /*song_name = findViewById(R.id.song_name);
-        artist_name = findViewById(R.id.song_artist);
-        cover_art = findViewById(R.id.cover_art);
-        next_btn = findViewById(R.id.id_next);
-        pre_btn = findViewById(R.id.id_pre);
-        play_pause_btn = findViewById(R.id.play_pause);
-        seekBar = findViewById(R.id.seekBar);*/
+    private void registerBroadcastReceiver() {
+        broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String info = intent.getStringExtra("info");
+                switch (info) {
+                    case AudioService.BRC_AUDIO_CHANGE:
+                        setMetaData(audioService.getCurSong());
+                        break;
+                    default:
+                }
+
+            }
+        };
+        IntentFilter intentFilter = new IntentFilter(AudioService.BRC_SERVICE_FILTER);
+        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, intentFilter);
     }
 
-    private void initEventListener()
-    {
+    private void initView() {
+        nowPlayingCollapse = findViewById(R.id.now_playing_collapse);
+        this.song_name = findViewById(R.id.song_name);
+        this.artist_name = findViewById(R.id.song_artist);
+        this.cover_art = findViewById(R.id.cover_art);
+        this.next_btn = findViewById(R.id.id_next);
+        this.pre_btn = findViewById(R.id.id_pre);
+        this.play_pause_btn = findViewById(R.id.play_pause);
+        this.seekBar = findViewById(R.id.seekBar);
+    }
+
+    private void initEventListener() {
         nowPlayingCollapse.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -124,29 +159,59 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         pre_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                if (isBound) {
+                    audioService.preSong();
+                }
             }
         });
         next_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                if (isBound) {
+                    audioService.nextSong();
+                }
             }
         });
         play_pause_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                if (isBound) {
+                    if (audioService.isPlaying()) {
+                        audioService.playPauseAudio(AudioService.ACTION_PAUSE);
+                        play_pause_btn.setImageResource(R.drawable.ic_round_play_arrow_24);
+                    } else {
+                        audioService.playPauseAudio(AudioService.ACTION_PLAY);
+                        play_pause_btn.setImageResource(R.drawable.ic_round_pause_24);
+                    }
+                }
             }
         });
     }
 
+    private void setMetaData(MusicFiles musicFiles) {
+        seekBar.setProgress(0);
+        int durationTotal = Integer.parseInt(musicFiles.getDuration()) / 1000;
+        song_name.setText(musicFiles.getTitle());
+        artist_name.setText(musicFiles.getArtist());
+        seekBar.setMax(durationTotal);
+
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        retriever.setDataSource(musicFiles.getPath());
+        byte[] art = retriever.getEmbeddedPicture();
+        Bitmap bitmap;
+        if (art != null) {
+            bitmap = BitmapFactory.decodeByteArray(art, 0, art.length);
+            Glide.with(this).asBitmap().load(bitmap).into(cover_art);
+        } else {
+            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.music_default);
+            Glide.with(this).asBitmap().load(R.drawable.music_default).into(cover_art);
+        }
+    }
+
     private void permission() {
         if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(MainActivity.this, new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
-        }
-        else
-        {
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
+        } else {
             playlists = getAllAudio(this);
             initViewPager();
         }
@@ -158,9 +223,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         if (requestCode == REQUEST_CODE) {
             playlists = getAllAudio(this);
             initViewPager();
-        }
-        else {
-            ActivityCompat.requestPermissions(MainActivity.this, new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
+        } else {
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
         }
     }
 
@@ -195,9 +259,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         });
     }
 
-    public static  class ViewPagerAdapter extends FragmentPagerAdapter {
+    public static class ViewPagerAdapter extends FragmentPagerAdapter {
         private ArrayList<Fragment> fragments;
         private ArrayList<String> titles;
+
         public ViewPagerAdapter(@NonNull FragmentManager fm) {
             super(fm);
             this.fragments = new ArrayList<>();
@@ -227,8 +292,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         }
     }
 
-    public static ArrayList<MusicFiles> getAllAudio(Context context)
-    {
+    public static ArrayList<MusicFiles> getAllAudio(Context context) {
         ArrayList<String> duplicate = new ArrayList<>();
         ArrayList<MusicFiles> tempAudioList = new ArrayList<>();
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
@@ -242,8 +306,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         };
         Cursor cursor = context.getContentResolver().query(uri, projection, null, null, null);
 
-        if (cursor != null && cursor.moveToFirst())
-        {
+        if (cursor != null && cursor.moveToFirst()) {
             do {
                 String album = cursor.getString(0);
                 String title = cursor.getString(1);
@@ -259,7 +322,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     duplicate.add(album);
                 }
             } while (cursor.moveToNext());
-                cursor.close();
+            cursor.close();
         }
         return tempAudioList;
     }
@@ -282,10 +345,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     public boolean onQueryTextChange(String newText) {
         String userInput = newText.toLowerCase();
         ArrayList<MusicFiles> myFiles = new ArrayList<>();
-        for (MusicFiles song : playlists)
-        {
-            if(song.getTitle().toLowerCase().contains(userInput))
-            {
+        for (MusicFiles song : playlists) {
+            if (song.getTitle().toLowerCase().contains(userInput)) {
                 myFiles.add(song);
             }
         }
