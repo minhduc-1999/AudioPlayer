@@ -6,10 +6,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.lifecycle.ViewModelProviders;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.palette.graphics.Palette;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -49,9 +52,11 @@ import static com.example.myaudioplayer.MainActivity.repeatBoolean;
 import static com.example.myaudioplayer.MainActivity.shuffleBoolean;
 import static com.example.myaudioplayer.MusicAdapter.mFiles;
 
-public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnCompletionListener {
+public class PlayerActivity extends AppCompatActivity {
     private PlayerActivityViewModel viewModel;
     private AudioService audioService;
+
+    private BroadcastReceiver broadcastReceiver;
 
     TextView song_name, artist_name, duration_played, duration_total;
     ImageView cover_art, nextBtn, preBtn, backBtn, shuffleBtn, repeatBtn, menuBtn;
@@ -68,6 +73,8 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
 
         viewModel = ViewModelProviders.of(this).get(PlayerActivityViewModel.class);
         registerLiveDataListenner();
+
+        registerBroadcastReceiver();
 
         initView();
 
@@ -126,6 +133,17 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
                 }
             }
         });
+    }
+
+    private void registerBroadcastReceiver() {
+        broadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                    nextBtnClick();
+            }
+        };
+        IntentFilter intentFilter = new IntentFilter(AudioService.BRC_SERVICE_FILTER);
+        LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, intentFilter);
     }
 
     private void registerLiveDataListenner() {
@@ -418,15 +436,5 @@ public class PlayerActivity extends AppCompatActivity implements MediaPlayer.OnC
             }
         });
         imageView.startAnimation(animOut);
-    }
-
-    @Override
-    public void onCompletion(MediaPlayer mp) {
-        nextBtnClick();
-        /*if (mediaPlayer != null) {
-            mediaPlayer = MediaPlayer.create(getApplicationContext(), uri);
-            mediaPlayer.start();
-            mediaPlayer.setOnCompletionListener(this);
-        }*/
     }
 }

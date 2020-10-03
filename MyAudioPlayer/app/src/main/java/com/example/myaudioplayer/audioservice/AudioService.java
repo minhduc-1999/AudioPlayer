@@ -1,6 +1,8 @@
 package com.example.myaudioplayer.audioservice;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
@@ -11,14 +13,17 @@ import android.os.IBinder;
 import android.provider.MediaStore;
 
 import androidx.annotation.RequiresApi;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.example.myaudioplayer.PlayerActivity;
 
 import java.io.IOException;
 
-public class AudioService extends Service implements MediaPlayer.OnPreparedListener {
+public class AudioService extends Service implements MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener {
     public static final String ACTION_PLAY = "ACTION_PLAY";
     public static final String ACTION_PAUSE = "ACTION_PASUE";
+    public static final String BRC_SERVICE_FILTER = "BRC_SERVICE";
+
 
     private boolean isPlaying;
 
@@ -70,7 +75,6 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
         );*/
         //mediaPlayer.setOnPreparedListener(this);
         mBinder = new AudioBinder();
-        super.onCreate();
     }
 
     @Override
@@ -123,9 +127,21 @@ public class AudioService extends Service implements MediaPlayer.OnPreparedListe
             mediaPlayer.release();
         }
         mediaPlayer = MediaPlayer.create(this, uri);
+        mediaPlayer.setOnCompletionListener(this);
         mediaPlayer.start();
         isPlaying = true;
         //prepareAudio(uri);
+    }
+
+    @Override
+    public void onCompletion(MediaPlayer mp) {
+        sendServiceBroadcast(BRC_SERVICE_FILTER);
+    }
+
+    private void sendServiceBroadcast(String filter) {
+        Intent intent = new Intent();
+        intent.setAction(filter);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     public class AudioBinder extends Binder {
