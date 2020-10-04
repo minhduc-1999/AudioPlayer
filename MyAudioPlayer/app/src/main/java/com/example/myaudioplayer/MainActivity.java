@@ -1,6 +1,9 @@
 package com.example.myaudioplayer;
 
 import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -35,6 +38,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -46,6 +50,7 @@ import androidx.viewpager.widget.ViewPager;
 import com.bumptech.glide.Glide;
 import com.example.myaudioplayer.audiomodel.MusicFiles;
 import com.example.myaudioplayer.audioservice.AudioService;
+import com.example.myaudioplayer.notification.NotificationReceiver;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 
@@ -78,6 +83,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     private Handler handler = new Handler();
 
+    public static final String MCHANNEL ="MCHANNEL";
+    public static final String PLAYBUTTON = "PLAYBUTTON";
+    public static final String ClOSEBUTTON = "ClOSEBUTTON";
+    public static final String PREBUTTON = "PREBUTTON";
+    public static final String NEXTBUTTON = "NEXTBUTTON";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         doStartAudioService();
         initView();
         initEventListener();
-
+        createNotificationChannel();
         MainActivity.this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -107,6 +118,15 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         super.onDestroy();
     }
 
+    private void createNotificationChannel() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            NotificationChannel mNotificationChannel = new NotificationChannel(MCHANNEL, "Music Channel", NotificationManager.IMPORTANCE_HIGH);
+            mNotificationChannel.setDescription("Music Channel Description");
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(mNotificationChannel);
+        }
+    }
+
     private void doStartAudioService() {
         Intent serviceIntent = new Intent(this, AudioService.class);
         startService(serviceIntent);
@@ -123,6 +143,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         Intent serviceIntent = new Intent(this, AudioService.class);
         bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
+
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
