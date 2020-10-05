@@ -172,21 +172,6 @@ public class PlayerActivity extends AppCompatActivity {
                             else
                                 setMetaData(audioService.getCurSong(), audioService.getCurrentDuration() / 1000);
                         }
-                        /*else if (nextSource.equals(AudioService.PLAYLIST_SOURCE_SONG)) {
-                            audioService.setPlaylist(playlists);
-                            audioService.setPlaylist_source(AudioService.PLAYLIST_SOURCE_SONG);
-                            if (startPosition != audioService.getCurSongPos() && startPosition != -1)
-                                audioService.changeAudio(startPosition);
-                            else
-                                setMetaData(audioService.getCurSong(), audioService.getCurrentDuration() / 1000);
-                        } else {
-                            audioService.setPlaylist(albumFiles);
-                            audioService.setPlaylist_source(AudioService.PLAYLIST_SOURCE_ALBUM);
-                            if (startPosition != audioService.getCurSongPos() && startPosition != -1)
-                                audioService.changeAudio(startPosition);
-                            else
-                                setMetaData(audioService.getCurSong(), audioService.getCurrentDuration() / 1000);
-                        }*/
                     } else if (startPosition != -1) {
                         if (nextSource.equals(AudioService.PLAYLIST_SOURCE_SONG)) {
                             if (source.equals(AudioService.PLAYLIST_SOURCE_ALBUM) || source.equals(AudioService.PLAYLIST_SOURCE_NONE)) {
@@ -219,34 +204,6 @@ public class PlayerActivity extends AppCompatActivity {
     private void bindAudioService() {
         Intent serviceIntent = new Intent(this, AudioService.class);
         bindService(serviceIntent, viewModel.getServiceConnection(), Context.BIND_AUTO_CREATE);
-    }
-
-    private void setMetaData(MusicFiles musicFiles, int progress) {
-        int durationTotal = Integer.parseInt(musicFiles.getDuration()) / 1000;
-        duration_total.setText(formattedTime(durationTotal));
-        seekBar.setMax(durationTotal);
-        if (progress == -1) {
-            seekBar.setProgress(0);
-            duration_played.setText(formattedTime(0));
-        } else {
-            seekBar.setProgress(progress);
-            duration_played.setText(formattedTime(progress));
-        }
-        song_name.setText(musicFiles.getTitle());
-        artist_name.setText(musicFiles.getArtist());
-
-
-        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        retriever.setDataSource(musicFiles.getPath());
-        byte[] art = retriever.getEmbeddedPicture();
-        Bitmap bitmap;
-        if (art != null) {
-            bitmap = BitmapFactory.decodeByteArray(art, 0, art.length);
-            ImageAnimation(this, cover_art, bitmap);
-        } else {
-            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.music_default);
-            ImageAnimation(this, cover_art, bitmap);
-        }
     }
 
     @Override
@@ -433,4 +390,92 @@ public class PlayerActivity extends AppCompatActivity {
         });
         imageView.startAnimation(animOut);
     }
+
+    private void setMetaData(MusicFiles musicFiles, int progress) {
+        int durationTotal = Integer.parseInt(musicFiles.getDuration()) / 1000;
+        duration_total.setText(formattedTime(durationTotal));
+        seekBar.setMax(durationTotal);
+        if (progress == -1) {
+            seekBar.setProgress(0);
+            duration_played.setText(formattedTime(0));
+        } else {
+            seekBar.setProgress(progress);
+            duration_played.setText(formattedTime(progress));
+        }
+        song_name.setText(musicFiles.getTitle());
+        artist_name.setText(musicFiles.getArtist());
+
+
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        retriever.setDataSource(musicFiles.getPath());
+        byte[] art = retriever.getEmbeddedPicture();
+        Bitmap bitmap;
+        if (art != null) {
+            bitmap = BitmapFactory.decodeByteArray(art, 0, art.length);
+            ImageAnimation(this, cover_art, bitmap);
+        } else {
+            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.music_default);
+            ImageAnimation(this, cover_art, bitmap);
+        }
+    }
+
+
+    /*private void metaData(Uri uri) {
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        retriever.setDataSource(uri.toString());
+        int durationTotal = Integer.parseInt(listSong.get(position).getDuration()) / 1000;
+        duration_total.setText(formattedTime(durationTotal));
+        song_name.setText(listSong.get(position).getTitle());
+        artist_name.setText(listSong.get(position).getArtist());
+        seekBar.setMax(mediaPlayer.getDuration() / 1000);
+        byte[] art = retriever.getEmbeddedPicture();
+        Bitmap bitmap;
+        if (art != null) {
+            bitmap = BitmapFactory.decodeByteArray(art, 0, art.length);
+            ImageAnimation(this, cover_art, bitmap);
+            *//*Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
+                @Override
+                public void onGenerated(@Nullable Palette palette) {
+                    Palette.Swatch swatch = palette.getDominantSwatch();
+                    if (swatch != null) {
+                        ImageView gredient = findViewById(R.id.imageViewGradient);
+                        RelativeLayout mContainer = findViewById(R.id.mContainer);
+                        gredient.setBackgroundResource(R.drawable.gradient_bg);
+                        mContainer.setBackgroundResource(R.drawable.main_bg);
+                        GradientDrawable gradientDrawable = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,
+                                new int[]{swatch.getRgb(), 0x00000000});
+                        gredient.setBackground(gradientDrawable);
+                        GradientDrawable gradientDrawableBg = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,
+                                new int[]{swatch.getRgb(), swatch.getRgb()});
+                        mContainer.setBackground(gradientDrawableBg);
+                        song_name.setTextColor(swatch.getBodyTextColor());
+                        artist_name.setTextColor(swatch.getBodyTextColor());
+                    } else {
+                        ImageView gredient = findViewById(R.id.imageViewGradient);
+                        RelativeLayout mContainer = findViewById(R.id.mContainer);
+                        gredient.setBackgroundResource(R.drawable.gradient_bg);
+                        mContainer.setBackgroundResource(R.drawable.main_bg);
+                        GradientDrawable gradientDrawable = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,
+                                new int[]{0xff000000, 0x00000000});
+                        gredient.setBackground(gradientDrawable);
+                        GradientDrawable gradientDrawableBg = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,
+                                new int[]{0xff000000, 0xff000000});
+                        mContainer.setBackground(gradientDrawableBg);
+                        song_name.setTextColor(Color.WHITE);
+                        artist_name.setTextColor(Color.DKGRAY);
+                    }
+                }
+            });*//*
+        } else {
+            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.music_default);
+            ImageAnimation(this, cover_art, bitmap);
+            //Glide.with(this).asBitmap().load(R.drawable.music_default).into(cover_art);
+            *//*ImageView gredient = findViewById(R.id.imageViewGradient);
+            RelativeLayout mContainer = findViewById(R.id.mContainer);
+            gredient.setBackgroundResource(R.drawable.gradient_bg);
+            mContainer.setBackgroundResource(R.drawable.main_bg);
+            song_name.setTextColor(Color.WHITE);
+            artist_name.setTextColor(Color.DKGRAY);*//*
+        }
+    }*/
 }

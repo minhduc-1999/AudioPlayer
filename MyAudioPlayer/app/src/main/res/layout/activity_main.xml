@@ -123,7 +123,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/tab_layout"
         android:layout_alignParentBottom="true"
-        app:tabSelectedTextColor="@color/color_select"
+        app:tabSelectedTextColor="@color/progress"
         app:tabIndicatorHeight="0dp"
         app:tabTextAppearance="@style/MyCustomTabTextAppearance"
         android:layout_marginBottom="-5dp"
