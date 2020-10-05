@@ -7,8 +7,6 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -18,7 +16,6 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
@@ -30,10 +27,7 @@ import com.example.myaudioplayer.audioservice.AudioService;
 import com.example.myaudioplayer.viewmodel.PlayerActivityViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.util.ArrayList;
-
 import static com.example.myaudioplayer.AlbumDetailsAdapter.albumFiles;
-import static com.example.myaudioplayer.MainActivity.albums;
 import static com.example.myaudioplayer.MainActivity.playlists;
 
 public class PlayerActivity extends AppCompatActivity {
@@ -46,9 +40,10 @@ public class PlayerActivity extends AppCompatActivity {
     ImageView cover_art, nextBtn, preBtn, backBtn, shuffleBtn, repeatBtn, menuBtn;
     FloatingActionButton playPauseBtn;
     SeekBar seekBar;
-    boolean isBindToCreatedService = false;
+    //boolean isBindToCreatedService = false;
+    String nextSource;
     private int startPosition;
-    private boolean isAlbumPlaylist;
+    //private boolean isAlbumPlaylist;
     private Handler handler = new Handler();
     private Thread playThread, preThread, nextThread;
 
@@ -62,11 +57,11 @@ public class PlayerActivity extends AppCompatActivity {
 
         registerBroadcastReceiver();
 
-        bindAudioService();
+
         initView();
 
         getIntentMethod();
-
+        bindAudioService();
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -158,14 +153,54 @@ public class PlayerActivity extends AppCompatActivity {
                 if (audioBinder != null) {
                     audioService = audioBinder.getService();
                     isBound = true;
-                    if (isAlbumPlaylist)
-                        audioService.setPlaylist(albums);
-                    else
-                        audioService.setPlaylist(playlists);
-                    if (isBindToCreatedService) {
-                        setMetaData(audioService.getCurSong(), audioService.getCurrentDuration() / 1000);
-                    } else if (startPosition != -1)
+                    String source = audioService.getPlaylist_source();
+                    String state = audioService.getState();
+                    if (!state.equals(AudioService.STATE_NONE)) {
+                        if (nextSource.equals(AudioService.PLAYLIST_SOURCE_NONE))
+                            setMetaData(audioService.getCurSong(), audioService.getCurrentDuration() / 1000);
+                        else if (!nextSource.equals(source))
+                        {
+                             if (nextSource.equals(AudioService.PLAYLIST_SOURCE_SONG)) {
+                                audioService.setPlaylist(playlists);
+                                audioService.setPlaylist_source(AudioService.PLAYLIST_SOURCE_SONG);
+                            } else {
+                                audioService.setPlaylist(albumFiles);
+                                audioService.setPlaylist_source(AudioService.PLAYLIST_SOURCE_ALBUM);
+                            }
+                            if (startPosition != audioService.getCurSongPos() && startPosition != -1)
+                                audioService.changeAudio(startPosition);
+                            else
+                                setMetaData(audioService.getCurSong(), audioService.getCurrentDuration() / 1000);
+                        }
+                        /*else if (nextSource.equals(AudioService.PLAYLIST_SOURCE_SONG)) {
+                            audioService.setPlaylist(playlists);
+                            audioService.setPlaylist_source(AudioService.PLAYLIST_SOURCE_SONG);
+                            if (startPosition != audioService.getCurSongPos() && startPosition != -1)
+                                audioService.changeAudio(startPosition);
+                            else
+                                setMetaData(audioService.getCurSong(), audioService.getCurrentDuration() / 1000);
+                        } else {
+                            audioService.setPlaylist(albumFiles);
+                            audioService.setPlaylist_source(AudioService.PLAYLIST_SOURCE_ALBUM);
+                            if (startPosition != audioService.getCurSongPos() && startPosition != -1)
+                                audioService.changeAudio(startPosition);
+                            else
+                                setMetaData(audioService.getCurSong(), audioService.getCurrentDuration() / 1000);
+                        }*/
+                    } else if (startPosition != -1) {
+                        if (nextSource.equals(AudioService.PLAYLIST_SOURCE_SONG)) {
+                            if (source.equals(AudioService.PLAYLIST_SOURCE_ALBUM) || source.equals(AudioService.PLAYLIST_SOURCE_NONE)) {
+                                audioService.setPlaylist(playlists);
+                                audioService.setPlaylist_source(AudioService.PLAYLIST_SOURCE_SONG);
+                            }
+                        } else if (nextSource.equals(AudioService.PLAYLIST_SOURCE_ALBUM)) {
+                            if (source.equals(AudioService.PLAYLIST_SOURCE_SONG) || source.equals(AudioService.PLAYLIST_SOURCE_NONE)) {
+                                audioService.setPlaylist(albumFiles);
+                                audioService.setPlaylist_source(AudioService.PLAYLIST_SOURCE_ALBUM);
+                            }
+                        }
                         audioService.changeAudio(startPosition);
+                    }
                 } else {
                     audioService = null;
                     isBound = false;
@@ -193,8 +228,7 @@ public class PlayerActivity extends AppCompatActivity {
         if (progress == -1) {
             seekBar.setProgress(0);
             duration_played.setText(formattedTime(0));
-        }
-        else {
+        } else {
             seekBar.setProgress(progress);
             duration_played.setText(formattedTime(progress));
         }
@@ -324,18 +358,18 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void getIntentMethod() {
         int position = getIntent().getIntExtra("position", -1);
-        String sender = getIntent().getStringExtra("sender");
-        boolean isCreateService = getIntent().getBooleanExtra("createService", false);
+        nextSource = getIntent().getStringExtra("sender");
+        //boolean isCreateService = getIntent().getBooleanExtra("createService", false);
         String state = getIntent().getStringExtra("state");
-        if (sender != null && sender.equals("albumDetails")) {
+        /*if (playlist_source != null && playlist_source.equals(AudioService.PLAYLIST_SOURCE_ALBUM)) {
             this.isAlbumPlaylist = true;
         } else
-            this.isAlbumPlaylist = false;
-        if (!isCreateService) {
+            this.isAlbumPlaylist = false;*/
+        /*if (!isCreateService) {
             isBindToCreatedService = true;
         } else {
             isBindToCreatedService = false;
-        }
+        }*/
         if (state.equals(AudioService.STATE_PLAY))
             playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
         else
@@ -360,65 +394,6 @@ public class PlayerActivity extends AppCompatActivity {
         playPauseBtn = findViewById(R.id.play_pause);
         seekBar = findViewById(R.id.seekBar);
     }
-
-    /*private void metaData(Uri uri) {
-        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        retriever.setDataSource(uri.toString());
-        int durationTotal = Integer.parseInt(listSong.get(position).getDuration()) / 1000;
-        duration_total.setText(formattedTime(durationTotal));
-        song_name.setText(listSong.get(position).getTitle());
-        artist_name.setText(listSong.get(position).getArtist());
-        seekBar.setMax(mediaPlayer.getDuration() / 1000);
-        byte[] art = retriever.getEmbeddedPicture();
-        Bitmap bitmap;
-        if (art != null) {
-            bitmap = BitmapFactory.decodeByteArray(art, 0, art.length);
-            ImageAnimation(this, cover_art, bitmap);
-            *//*Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
-                @Override
-                public void onGenerated(@Nullable Palette palette) {
-                    Palette.Swatch swatch = palette.getDominantSwatch();
-                    if (swatch != null) {
-                        ImageView gredient = findViewById(R.id.imageViewGradient);
-                        RelativeLayout mContainer = findViewById(R.id.mContainer);
-                        gredient.setBackgroundResource(R.drawable.gradient_bg);
-                        mContainer.setBackgroundResource(R.drawable.main_bg);
-                        GradientDrawable gradientDrawable = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,
-                                new int[]{swatch.getRgb(), 0x00000000});
-                        gredient.setBackground(gradientDrawable);
-                        GradientDrawable gradientDrawableBg = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,
-                                new int[]{swatch.getRgb(), swatch.getRgb()});
-                        mContainer.setBackground(gradientDrawableBg);
-                        song_name.setTextColor(swatch.getBodyTextColor());
-                        artist_name.setTextColor(swatch.getBodyTextColor());
-                    } else {
-                        ImageView gredient = findViewById(R.id.imageViewGradient);
-                        RelativeLayout mContainer = findViewById(R.id.mContainer);
-                        gredient.setBackgroundResource(R.drawable.gradient_bg);
-                        mContainer.setBackgroundResource(R.drawable.main_bg);
-                        GradientDrawable gradientDrawable = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,
-                                new int[]{0xff000000, 0x00000000});
-                        gredient.setBackground(gradientDrawable);
-                        GradientDrawable gradientDrawableBg = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,
-                                new int[]{0xff000000, 0xff000000});
-                        mContainer.setBackground(gradientDrawableBg);
-                        song_name.setTextColor(Color.WHITE);
-                        artist_name.setTextColor(Color.DKGRAY);
-                    }
-                }
-            });*//*
-        } else {
-            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.music_default);
-            ImageAnimation(this, cover_art, bitmap);
-            //Glide.with(this).asBitmap().load(R.drawable.music_default).into(cover_art);
-            *//*ImageView gredient = findViewById(R.id.imageViewGradient);
-            RelativeLayout mContainer = findViewById(R.id.mContainer);
-            gredient.setBackgroundResource(R.drawable.gradient_bg);
-            mContainer.setBackgroundResource(R.drawable.main_bg);
-            song_name.setTextColor(Color.WHITE);
-            artist_name.setTextColor(Color.DKGRAY);*//*
-        }
-    }*/
 
     public void ImageAnimation(final Context context, final ImageView imageView, final Bitmap bitmap) {
         Animation animOut = AnimationUtils.loadAnimation(context, android.R.anim.fade_out);

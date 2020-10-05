@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#211F23</color>
-    <color name="colorPrimaryDark">#151415</color>
-    <color name="colorAccent">#D1CBCB</color>
-    <color name="selectedColor">#03A9F4</color>
-    <color name="progress">#A6A2A0</color>
-    <color name="colorPrimaryText">#FFFFFF</color>
-    <color name="colorSecondaryText">#88BDBDBD</color>
+    <color name="colorPrimary">#272429</color>
+    <color name="colorPrimaryDark">#0E0E0E</color>
+    <color name="colorAccent">#E6DCDC</color>
+    <color name="progress">#02F30B</color>
+    <color name="progress_bg">#85817F</color>
+    <color name="color_none_select">#74B1AFAF</color>
+    <color name="color_select">#FFFFFF</color>
 </resources>

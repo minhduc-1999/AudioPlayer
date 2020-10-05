@@ -199,8 +199,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 if (isBound) {
                     Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
                     if (audioService != null) {
-                        intent.putExtra("createService", false);
                         String state = audioService.getState();
+                        intent.putExtra("sender", AudioService.PLAYLIST_SOURCE_NONE);
                         intent.putExtra("state", state);
 
                     } else {
@@ -298,12 +298,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
-                tab.getIcon().setColorFilter(getResources().getColor(R.color.selectedColor), PorterDuff.Mode.SRC_IN);
+                tab.getIcon().setColorFilter(getResources().getColor(R.color.color_select), PorterDuff.Mode.SRC_IN);
             }
 
             @Override
             public void onTabUnselected(TabLayout.Tab tab) {
-                tab.getIcon().setColorFilter(getResources().getColor(R.color.colorAccent), PorterDuff.Mode.SRC_IN);
+                tab.getIcon().setColorFilter(getResources().getColor(R.color.color_none_select), PorterDuff.Mode.SRC_IN);
             }
 
             @Override

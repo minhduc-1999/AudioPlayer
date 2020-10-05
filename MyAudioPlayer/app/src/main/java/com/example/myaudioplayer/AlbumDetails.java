@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.myaudioplayer.audiomodel.*;
+
 import java.util.ArrayList;
 
 import static com.example.myaudioplayer.MainActivity.playlists;
@@ -22,6 +23,7 @@ public class AlbumDetails extends AppCompatActivity {
     String albumName;
     ArrayList<MusicFiles> albumSongs = new ArrayList<>();
     AlbumDetailsAdapter albumDetailsAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,40 +31,32 @@ public class AlbumDetails extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerView);
         albumPhoto = findViewById(R.id.albumPhoto);
         albumName = getIntent().getStringExtra("albumName");
-        int j=0;
-        for (int i=0; i< playlists.size(); i++)
-        {
-            if (albumName.equals((playlists.get(i).getAlbum())))
-            {
-                albumSongs.add(j,playlists.get(i));
+        int j = 0;
+        for (int i = 0; i < playlists.size(); i++) {
+            if (albumName.equals((playlists.get(i).getAlbum()))) {
+                albumSongs.add(j, playlists.get(i));
                 j++;
             }
         }
         byte[] image = getAlbumArt(albumSongs.get(0).getPath());
-        if (image != null)
-        {
+        if (image != null) {
             Glide.with(this).load(image).into(albumPhoto);
-        }
-        else
-        {
+        } else {
             Glide.with(this).load(R.drawable.music_default).into(albumPhoto);
         }
-
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if (!(albumSongs.size()<1))
-        {
-            albumDetailsAdapter = new AlbumDetailsAdapter(this,albumSongs);
+        if (!(albumSongs.size() < 1)) {
+            albumDetailsAdapter = new AlbumDetailsAdapter(this, albumSongs);
             recyclerView.setAdapter(albumDetailsAdapter);
             recyclerView.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL, false));
         }
     }
 
-    private byte[] getAlbumArt(String uri)
-    {
+    private byte[] getAlbumArt(String uri) {
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         retriever.setDataSource(uri);
         byte[] art = retriever.getEmbeddedPicture();

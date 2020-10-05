@@ -60,7 +60,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MyViewHolder
             public void onClick(View v) {
                 Intent intent = new Intent(mContext, PlayerActivity.class);
                 intent.putExtra("position", position);
-                intent.putExtra("createService", true);
+                intent.putExtra("sender", AudioService.PLAYLIST_SOURCE_SONG);
                 intent.putExtra("state", AudioService.STATE_PLAY);
                 mContext.startActivity(intent);
             }

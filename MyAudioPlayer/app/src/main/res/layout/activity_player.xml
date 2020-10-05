@@ -188,9 +188,9 @@
             android:layout_alignParentBottom="true"
             android:layout_marginLeft="20dp"
             android:layout_marginRight="20dp"
-            android:progressBackgroundTint="@color/progress"
-            android:progressTint="@color/selectedColor"
-            android:thumbTint="@color/selectedColor"
+            android:progressBackgroundTint="@color/progress_bg"
+            android:progressTint="@color/progress"
+            android:thumbTint="@color/progress"
             android:thumbTintMode="src_in" />
     </RelativeLayout>
 </RelativeLayout>

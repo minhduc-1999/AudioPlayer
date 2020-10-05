@@ -3,7 +3,6 @@ package com.example.myaudioplayer;
 import android.content.Context;
 import android.content.Intent;
 import android.media.MediaMetadataRetriever;
-import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,7 +13,9 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.example.myaudioplayer.audiomodel.*;
+import com.example.myaudioplayer.audiomodel.MusicFiles;
+import com.example.myaudioplayer.audioservice.AudioService;
+
 import java.util.ArrayList;
 
 public class AlbumDetailsAdapter extends RecyclerView.Adapter<AlbumDetailsAdapter.MyHolder> {
@@ -48,8 +49,9 @@ public class AlbumDetailsAdapter extends RecyclerView.Adapter<AlbumDetailsAdapte
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(mContext, PlayerActivity.class);
-                intent.putExtra("sender", "albumDetails");
+                intent.putExtra("sender", AudioService.PLAYLIST_SOURCE_ALBUM);
                 intent.putExtra("position", position);
+                intent.putExtra("state", AudioService.STATE_PLAY);
                 mContext.startActivity(intent);
             }
         });

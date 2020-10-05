@@ -25,12 +25,24 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
     public static final String STATE_PLAY = "STATE_PLAY";
     public static final String STATE_PAUSE = "STATE_PAUSE";
     public static final String STATE_NONE = "STATE_NONE";
+    public static final String PLAYLIST_SOURCE_SONG = "PLAYLIST_SOURCE_SONG";
+    public static final String PLAYLIST_SOURCE_ALBUM = "PLAYLIST_SOURCE_ALBUM";
+    public static final String PLAYLIST_SOURCE_NONE = "PLAYLIST_SOURCE_NONE";
 
     private ArrayList<MusicFiles> mPlaylist;
     private int curSongPos;
     //private boolean isPlaying;
     private String state;
+    private String playlist_source;
     private boolean isShuffle, isRepeat;
+
+    public String getPlaylist_source() {
+        return playlist_source;
+    }
+
+    public int getCurSongPos() {
+        return curSongPos;
+    }
 
     private MediaPlayer mediaPlayer;
 
@@ -72,6 +84,11 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
         //mediaPlayer.setOnPreparedListener(this);
         mBinder = new AudioBinder();
         state = STATE_NONE;
+        playlist_source = PLAYLIST_SOURCE_NONE;
+    }
+
+    public void setPlaylist_source(String playlist_source) {
+        this.playlist_source = playlist_source;
     }
 
     @Override
