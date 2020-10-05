@@ -1,5 +1,7 @@
 package com.example.myaudioplayer;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -17,6 +19,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.NotificationCompat;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -24,10 +27,17 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.bumptech.glide.Glide;
 import com.example.myaudioplayer.audiomodel.MusicFiles;
 import com.example.myaudioplayer.audioservice.AudioService;
+import com.example.myaudioplayer.notification.NotificationReceiver;
 import com.example.myaudioplayer.viewmodel.PlayerActivityViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import static com.example.myaudioplayer.AlbumDetailsAdapter.albumFiles;
+import static com.example.myaudioplayer.MainActivity.ClOSEBUTTON;
+import static com.example.myaudioplayer.MainActivity.MCHANNEL;
+import static com.example.myaudioplayer.MainActivity.NEXTBUTTON;
+import static com.example.myaudioplayer.MainActivity.PLAYBUTTON;
+import static com.example.myaudioplayer.MainActivity.PREBUTTON;
+import static com.example.myaudioplayer.MainActivity.albums;
 import static com.example.myaudioplayer.MainActivity.playlists;
 
 public class PlayerActivity extends AppCompatActivity {
@@ -244,6 +254,8 @@ public class PlayerActivity extends AppCompatActivity {
             audioService.nextSong();
             //playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
         }
+        showNotification(audioService.getCurSong(), R.drawable.ic_round_pause_24);
+
     }
 
 
@@ -268,6 +280,8 @@ public class PlayerActivity extends AppCompatActivity {
             audioService.preSong();
             //playPauseBtn.setImageResource(R.drawable.ic_round_pause_24);
         }
+        showNotification(audioService.getCurSong(), R.drawable.ic_round_pause_24);
+
     }
 
     private void playThreadBtn() {
@@ -299,6 +313,53 @@ public class PlayerActivity extends AppCompatActivity {
             }
         }
     }
+    public void showNotification (MusicFiles musicFiles,int playPauseBtn) {
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        retriever.setDataSource(musicFiles.getPath());
+        byte[] art = retriever.getEmbeddedPicture();
+        Bitmap bitmap;
+        if (art != null) {
+            bitmap = BitmapFactory.decodeByteArray(art, 0, art.length);
+            ImageAnimation(this, cover_art, bitmap);
+        } else {
+            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.music_default);
+            ImageAnimation(this, cover_art, bitmap);
+        }
+        Intent intent = new Intent(this,PlayerActivity.class );
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, intent,0);
+        Intent prevIntent = new Intent(this, NotificationReceiver.class).setAction(PREBUTTON);
+        PendingIntent prevPendingIntent = PendingIntent.getBroadcast(this, 0, prevIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent playIntent = new Intent(this, NotificationReceiver.class).setAction(PLAYBUTTON);
+        PendingIntent playPendingIntent = PendingIntent.getBroadcast(this, 0, playIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent nextIntent = new Intent(this, NotificationReceiver.class).setAction(NEXTBUTTON);
+        PendingIntent nextPendingIntent = PendingIntent.getBroadcast(this, 0, nextIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent closeIntent = new Intent (this, NotificationReceiver.class).setAction(ClOSEBUTTON);
+        PendingIntent closePendingIntent = PendingIntent.getBroadcast(this, 0, closeIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        NotificationCompat.Builder mBuilder =
+                null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            mBuilder = new NotificationCompat.Builder(this, MCHANNEL)
+                    .setSmallIcon(R.drawable.ic_round_queue_music_24)
+                    .setLargeIcon(bitmap)
+                    .setContentTitle(musicFiles.getTitle())
+                    .setContentText(musicFiles.getArtist())
+                    .addAction(R.drawable.ic_round_skip_previous_24, "Previous", prevPendingIntent)
+                    .addAction(playPauseBtn, "Play", playPendingIntent)
+                    .addAction(R.drawable.ic_round_skip_next_24, "Next", nextPendingIntent)
+                    .addAction(R.drawable.ic_round_close_24, "Close", closePendingIntent)
+                    .setStyle(new androidx.media.app.NotificationCompat.MediaStyle())
+                    .setPriority(NotificationCompat.PRIORITY_MIN)
+                    .setOngoing(true)
+                    .setLocalOnly(true)
+                    .setNotificationSilent()
+                    .setContentIntent(contentIntent)
+                    .setLocalOnly(true);
+        }
+        NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        notificationManager.notify(0, mBuilder.build());
+    }
+
 
     private String formattedTime(int mCurrentPosition) {
         String totalOut = "";
