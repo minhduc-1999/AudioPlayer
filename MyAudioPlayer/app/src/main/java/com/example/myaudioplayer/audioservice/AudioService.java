@@ -3,28 +3,19 @@ package com.example.myaudioplayer.audioservice;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
-import android.media.MediaTimestamp;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
-import android.widget.ImageView;
-import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.example.myaudioplayer.MainActivity;
 import com.example.myaudioplayer.PlayerActivity;
 import com.example.myaudioplayer.R;
 import com.example.myaudioplayer.audiomodel.MusicFiles;
@@ -34,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import static com.example.myaudioplayer.MainActivity.MCHANNEL;
-import static com.example.myaudioplayer.PlayerActivity.ImageAnimation;
 
 public class AudioService extends Service implements MediaPlayer.OnCompletionListener {
     public static final String BRC_SERVICE_FILTER = "BRC_SERVICE";
@@ -56,7 +46,6 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
     private String state;
     private String playlist_source;
     private boolean isShuffle, isRepeat;
-    BroadcastReceiver notificationReceiver;
 
     public String getPlaylist_source() {
         return playlist_source;

@@ -1,7 +1,5 @@
 package com.example.myaudioplayer;
 
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -19,7 +17,6 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.NotificationCompat;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
@@ -27,21 +24,18 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import com.bumptech.glide.Glide;
 import com.example.myaudioplayer.audiomodel.MusicFiles;
 import com.example.myaudioplayer.audioservice.AudioService;
-import com.example.myaudioplayer.notification.NotificationReceiver;
 import com.example.myaudioplayer.viewmodel.PlayerActivityViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import static com.example.myaudioplayer.AlbumDetailsAdapter.albumFiles;
 import static com.example.myaudioplayer.MainActivity.playlists;
-import static com.example.myaudioplayer.audioservice.AudioService.NEXTBUTTON;
-import static com.example.myaudioplayer.audioservice.AudioService.PLAYBUTTON;
-import static com.example.myaudioplayer.audioservice.AudioService.PREBUTTON;
+
 
 public class PlayerActivity extends AppCompatActivity {
     private PlayerActivityViewModel viewModel;
     public static AudioService audioService;
     private boolean isBound = false;
-    private BroadcastReceiver broadcastReceiver, notificationReceiver;
+    private BroadcastReceiver broadcastReceiver;
     TextView song_name, artist_name, duration_played, duration_total;
     ImageView cover_art, nextBtn, preBtn, backBtn, shuffleBtn, repeatBtn, menuBtn;
     FloatingActionButton playPauseBtn;
