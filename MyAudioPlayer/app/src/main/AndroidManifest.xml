@@ -35,6 +35,14 @@
                 <action android:name="BRC_SERVICE"/>
             </intent-filter>
         </receiver>
+        <receiver android:name=".notification.NotificationReceiver">
+            <intent-filter>
+                <action android:name="NEXTBUTTON"/>
+                <action android:name="PLAYBUTTON"/>
+                <action android:name="PREBUTTON"/>
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>
