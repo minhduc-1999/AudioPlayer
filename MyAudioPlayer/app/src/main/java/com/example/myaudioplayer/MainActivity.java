@@ -84,10 +84,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private Handler handler = new Handler();
 
     public static final String MCHANNEL ="MCHANNEL";
-    public static final String PLAYBUTTON = "PLAYBUTTON";
-    public static final String ClOSEBUTTON = "ClOSEBUTTON";
-    public static final String PREBUTTON = "PREBUTTON";
-    public static final String NEXTBUTTON = "NEXTBUTTON";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -192,7 +188,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                             }
                         }
                         break;
-
                     default:
                 }
 
