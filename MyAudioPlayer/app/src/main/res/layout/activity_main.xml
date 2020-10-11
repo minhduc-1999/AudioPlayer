@@ -114,9 +114,9 @@
     </RelativeLayout>
     <View
         android:layout_width="match_parent"
-        android:layout_height="1dp"
+        android:layout_height="0.5dp"
         android:id="@+id/divider"
-        android:background="@color/colorAccent"
+        android:background="#848783"
         android:layout_above="@+id/tab_layout"/>
     <com.google.android.material.tabs.TabLayout
         android:layout_width="match_parent"

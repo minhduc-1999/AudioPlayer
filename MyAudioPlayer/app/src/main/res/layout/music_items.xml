@@ -30,8 +30,8 @@
             android:layout_height="wrap_content"
             android:text="Song name"
             android:layout_marginLeft="10dp"
-            android:textSize="50px"
             android:textColor="@android:color/primary_text_dark"
+            android:textSize="50px"
             android:id="@+id/music_file_name"/>
         <TextView
             android:layout_width="match_parent"

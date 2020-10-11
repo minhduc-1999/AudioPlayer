@@ -47,7 +47,7 @@ public class PlayerActivity extends AppCompatActivity {
     private BroadcastReceiver broadcastReceiver;
 
     TextView song_name, artist_name, duration_played, duration_total;
-    ImageView cover_art, nextBtn, preBtn, backBtn, shuffleBtn, repeatBtn, menuBtn;
+    ImageView cover_art, nextBtn, preBtn, backBtn, shuffleBtn, repeatBtn;
     FloatingActionButton playPauseBtn;
     SeekBar seekBar;
     //boolean isBindToCreatedService = false;
@@ -128,6 +128,12 @@ public class PlayerActivity extends AppCompatActivity {
                         repeatBtn.setImageResource(R.drawable.ic_round_repeat_24_on);
                     }
                 }
+            }
+        });
+        backBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
             }
         });
     }
@@ -408,7 +414,6 @@ public class PlayerActivity extends AppCompatActivity {
         backBtn = findViewById(R.id.back_btn);
         shuffleBtn = findViewById(R.id.id_shuffle);
         repeatBtn = findViewById(R.id.id_repeat);
-        menuBtn = findViewById(R.id.menu_btn);
         playPauseBtn = findViewById(R.id.play_pause);
         seekBar = findViewById(R.id.seekBar);
     }

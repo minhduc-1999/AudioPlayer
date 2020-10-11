@@ -46,6 +46,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MyViewHolder
     public void onBindViewHolder(@NonNull MyViewHolder holder, final int position) {
         MusicFiles file = mFiles.get(position);
         holder.file_name.setText(file.getTitle());
+        holder.artist_name.setText(file.getArtist());
         byte[] image = getAlbumArt(file.getPath());
         if (image != null)
         {
@@ -113,12 +114,14 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.MyViewHolder
 
     public class MyViewHolder extends RecyclerView.ViewHolder{
         TextView file_name;
+        TextView artist_name;
         ImageView album_art, menu_more;
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
             file_name = itemView.findViewById(R.id.music_file_name);
             album_art = itemView.findViewById(R.id.music_img);
             menu_more = itemView.findViewById(R.id.menu_more);
+            artist_name = itemView.findViewById(R.id.music_artist_name);
         }
     }
 

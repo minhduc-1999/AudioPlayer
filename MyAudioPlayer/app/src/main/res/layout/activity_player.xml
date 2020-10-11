@@ -28,7 +28,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_toLeftOf="@+id/menu_btn"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentLeft="true"
             android:layout_toRightOf="@id/back_btn"
             android:background="@android:color/transparent"
             android:gravity="center"
@@ -36,14 +37,6 @@
             android:textColor="@color/colorAccent"
             android:textSize="20dp"
             android:textStyle="bold" />
-
-        <ImageView
-            android:id="@+id/menu_btn"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:layout_alignParentRight="true"
-            android:layout_centerVertical="true"
-            android:src="@drawable/ic_round_menu_24" />
     </RelativeLayout>
 
     <RelativeLayout
