@@ -130,7 +130,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
-
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {

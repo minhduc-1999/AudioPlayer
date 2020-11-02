@@ -42,13 +42,9 @@ public class PlayerActivityViewModel extends AndroidViewModel {
         }
     };
 
-
-
     public MutableLiveData<AudioService.AudioBinder> getmBinder() {
         return mBinder;
     }
-
-
 
     public PlayerActivityViewModel(@NonNull Application application) {
         super(application);

@@ -11,6 +11,7 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.IBinder;
 
 import androidx.core.app.NotificationCompat;
@@ -186,11 +187,11 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
 
     private void sendServiceBroadcast(String filter, String info) {
         Intent intent = new Intent();
+        Bundle bundle = new Bundle();
         intent.setAction(filter);
         intent.putExtra("info", info);
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
-
 
     public void setPlaylist(ArrayList<MusicFiles> playlist)
     {
