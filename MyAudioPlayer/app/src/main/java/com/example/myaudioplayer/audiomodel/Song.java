@@ -1,25 +1,32 @@
 package com.example.myaudioplayer.audiomodel;
 
-public class MusicFiles {
+public class Song {
     private String path;
     private String title;
     private String artist;
     private String album;
     private String duration;
     private String id;
+    private String year;
 
-
-
-    public MusicFiles(String path, String title, String artist, String album, String duration, String id) {
+    public Song(String path, String title, String artist, String album, String duration,String year, String id) {
         this.path = path;
         this.title = title;
         this.artist = artist;
         this.album = album;
         this.duration = duration;
         this.id = id;
+        this.year = year;
     }
 
-    public MusicFiles() {
+    public Song() {
+    }
+    public String getYear() {
+        return year;
+    }
+
+    public void setYear(String year) {
+        this.year = year;
     }
 
     public String getPath() {

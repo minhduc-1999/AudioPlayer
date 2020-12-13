@@ -9,18 +9,13 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.MutableLiveData;
 
-import com.example.myaudioplayer.audiomodel.Song;
 import com.example.myaudioplayer.audioservice.AudioService;
 
-public class PlayerActivityViewModel extends AndroidViewModel {
-
+public class BaseViewModel extends AndroidViewModel {
     private MutableLiveData<AudioService.AudioBinder> mBinder = new MutableLiveData<>();
-    private MutableLiveData<Song> curSong = new MutableLiveData<>();
-
-    public MutableLiveData<Song> getCurSong() {
-        return curSong;
+    public BaseViewModel(@NonNull Application application) {
+        super(application);
     }
-
     public ServiceConnection getServiceConnection() {
         return serviceConnection;
     }
@@ -37,13 +32,7 @@ public class PlayerActivityViewModel extends AndroidViewModel {
             mBinder.postValue(null);
         }
     };
-
     public MutableLiveData<AudioService.AudioBinder> getmBinder() {
         return mBinder;
     }
-
-    public PlayerActivityViewModel(@NonNull Application application) {
-        super(application);
-    }
-
 }

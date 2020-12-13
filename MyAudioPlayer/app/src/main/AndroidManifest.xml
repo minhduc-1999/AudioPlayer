@@ -11,38 +11,39 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".view.WaitingActivity"></activity>
+        <activity
+            android:name=".view.AlbumDetailActivity"
+            android:theme="@style/ThemeNAB" />
+
         <service
-            android:name="com.example.myaudioplayer.audioservice.AudioService"
+            android:name=".audioservice.AudioService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
 
         <activity
-            android:name=".AlbumDetails"
+            android:name=".view.PlayerActivity"
             android:theme="@style/ThemeNAB" />
-        <activity
-            android:name=".PlayerActivity"
-            android:theme="@style/ThemeNAB" />
-        <activity android:name=".MainActivity">
+        <activity android:name=".view.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        
+
         <receiver android:name="android.content.BroadcastReceiver">
             <intent-filter>
-                <action android:name="BRC_SERVICE"/>
+                <action android:name="BRC_SERVICE" />
             </intent-filter>
         </receiver>
         <receiver android:name=".notification.NotificationReceiver">
             <intent-filter>
-                <action android:name="NEXTBUTTON"/>
-                <action android:name="PLAYBUTTON"/>
-                <action android:name="PREBUTTON"/>
+                <action android:name="NEXTBUTTON" />
+                <action android:name="PLAYBUTTON" />
+                <action android:name="PREBUTTON" />
             </intent-filter>
         </receiver>
-
     </application>
 
 </manifest>

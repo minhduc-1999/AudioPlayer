@@ -1,25 +1,19 @@
-package com.example.myaudioplayer;
+package com.example.myaudioplayer.view;
 
 import android.Manifest;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
 import android.media.MediaMetadataRetriever;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.IBinder;
-import android.provider.MediaStore;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -37,23 +31,37 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.viewpager.widget.ViewPager;
 
 import com.bumptech.glide.Glide;
-import com.example.myaudioplayer.audiomodel.MusicFiles;
+import com.example.myaudioplayer.R;
+import com.example.myaudioplayer.audiomodel.Playlist;
+import com.example.myaudioplayer.audiomodel.Song;
 import com.example.myaudioplayer.audioservice.AudioService;
+import com.example.myaudioplayer.viewmodel.LibraryViewModel;
+import com.example.myaudioplayer.viewmodel.PlaylistViewModel;
 import com.google.android.material.tabs.TabLayout;
 
 
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
-    public static final int REQUEST_CODE = 1;
-    static ArrayList<MusicFiles> playlists;
-    static ArrayList<MusicFiles> albums = new ArrayList<>();
+import static com.example.myaudioplayer.audioservice.AudioService.NEXTBUTTON;
+import static com.example.myaudioplayer.audioservice.AudioService.PLAYBUTTON;
+import static com.example.myaudioplayer.audioservice.AudioService.PREBUTTON;
 
-    private RelativeLayout nowPlayingCollapse;
+public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
+    public static final String INIT_TASK_DONE = "INIT_TASK_DONE";
+    public static final String PLAY_NEW_SONG = "PLAY_NEW_SONG";
+    public static final String OPEN_PLAYING_BAR = "OPEN_PLAYING_BAR";
+    private LibraryViewModel libraryViewModel;
+    private PlaylistViewModel playlistViewModel;
+
+    public static final int REQUEST_CODE = 1;
+
+    private RelativeLayout nowPlayingBar;
     private ProgressBar seekBar;
     private ImageView cover_art;
     private TextView song_name;
@@ -62,7 +70,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private TabLayout tabLayout;
 
     private boolean isBound = false;
-    private boolean isNowPlayingTabShow = false;
 
     private ImageView pre_btn;
     private ImageView next_btn;
@@ -79,6 +86,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        
+        libraryViewModel = ViewModelProviders.of(this).get(LibraryViewModel.class);
+        playlistViewModel = ViewModelProviders.of(this).get(PlaylistViewModel.class);
+
+        registerLiveDataListenner();
         permission();
         registerBroadcastReceiver();
         doStartAudioService();
@@ -93,6 +105,44 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     seekBar.setProgress(mCurrentPosition);
                 }
                 handler.postDelayed(this, 1000);
+            }
+        });
+    }
+
+    private void registerLiveDataListenner() {
+        libraryViewModel.getmBinder().observe(this, new Observer<AudioService.AudioBinder>() {
+            @Override
+            public void onChanged(AudioService.AudioBinder audioBinder) {
+                if (audioBinder != null) {
+                    audioService = audioBinder.getService();
+                    isBound = true;
+                } else {
+                    audioService = null;
+                    isBound = false;
+                }
+            }
+        });
+        playlistViewModel.getCurSong().observe(this, new Observer<Song>() {
+            @Override
+            public void onChanged(Song song) {
+                setMetaData(song);
+            }
+        });
+        playlistViewModel.getState().observe(this, new Observer<Integer>() {
+            @Override
+            public void onChanged(Integer s) {
+                if(s.equals(Playlist.STATE_PLAY))
+                {
+                    play_pause_btn.setImageResource(R.drawable.ic_round_pause_24);
+                    nowPlayingBar.setVisibility(View.VISIBLE);
+                }
+                else if (s.equals(Playlist.STATE_PAUSE))
+                {
+                    play_pause_btn.setImageResource(R.drawable.ic_round_play_arrow_24);
+                    nowPlayingBar.setVisibility(View.VISIBLE);
+                }
+                else
+                    nowPlayingBar.setVisibility(View.GONE);
             }
         });
     }
@@ -120,30 +170,15 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     private void doStopAudioService() {
-        unbindService(serviceConnection);
+        unbindService(libraryViewModel.getServiceConnection());
         Intent serviceIntent = new Intent(this, AudioService.class);
         stopService(serviceIntent);
     }
 
     private void bindService() {
         Intent serviceIntent = new Intent(this, AudioService.class);
-        bindService(serviceIntent, serviceConnection, Context.BIND_AUTO_CREATE);
+        bindService(serviceIntent, libraryViewModel.getServiceConnection(), Context.BIND_AUTO_CREATE);
     }
-
-    private ServiceConnection serviceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            AudioService.AudioBinder binder = (AudioService.AudioBinder) service;
-            audioService = binder.getService();
-            isBound = true;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            audioService = null;
-            isBound = false;
-        }
-    };
 
     private void registerBroadcastReceiver() {
         broadcastReceiver = new BroadcastReceiver() {
@@ -152,31 +187,13 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 String info = intent.getStringExtra("info");
                 switch (info) {
                     case AudioService.BRC_AUDIO_CHANGE:
-                        setMetaData(audioService.getCurSong());
-                        //play_pause_btn.setImageResource(R.drawable.ic_round_pause_24);
+                        playlistViewModel.getCurSong().postValue(audioService.getCurSong());
                         break;
                     case AudioService.BRC_PLAYING_STATE_CHANGE:
-                        String state = audioService.getState();
-                        if (state.equals(AudioService.STATE_PLAY)) {
-                            play_pause_btn.setImageResource(R.drawable.ic_round_pause_24);
-                            if (isNowPlayingTabShow == false) {
-                                nowPlayingCollapse.setVisibility(View.VISIBLE);
-                                isNowPlayingTabShow = true;
-                            }
-                        } else if (state.equals( AudioService.STATE_PAUSE)) {
-                            play_pause_btn.setImageResource(R.drawable.ic_round_play_arrow_24);
-                            if (isNowPlayingTabShow == false)
-                                if (isNowPlayingTabShow == false) {
-                                    nowPlayingCollapse.setVisibility(View.VISIBLE);
-                                    isNowPlayingTabShow = true;
-                                }
-                        } else {
-                            if (isNowPlayingTabShow == true) {
-                                nowPlayingCollapse.setVisibility(View.GONE);
-                                isNowPlayingTabShow = false;
-                            }
-                        }
+                        playlistViewModel.setState(audioService.getState());
                         break;
+                    case AudioService.BRC_AUDIO_COMPLETED:
+                        audioService.changeAudio(playlistViewModel.nextSong());
                     default:
                 }
 
@@ -187,7 +204,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     private void initView() {
-        nowPlayingCollapse = findViewById(R.id.now_playing_collapse);
+        nowPlayingBar = findViewById(R.id.now_playing_collapse);
         this.song_name = findViewById(R.id.song_name);
         this.artist_name = findViewById(R.id.song_artist);
         this.cover_art = findViewById(R.id.cover_art);
@@ -198,19 +215,15 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     private void initEventListener() {
-        nowPlayingCollapse.setOnClickListener(new View.OnClickListener() {
+        nowPlayingBar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (isBound) {
                     Intent intent = new Intent(MainActivity.this, PlayerActivity.class);
-                    if (audioService != null) {
-                        String state = audioService.getState();
-                        intent.putExtra("sender", AudioService.PLAYLIST_SOURCE_NONE);
-                        intent.putExtra("state", state);
-
-                    } else {
-                        intent.putExtra("createService", true);
-                    }
+                    int state = playlistViewModel.getState().getValue();
+                    intent.setAction(OPEN_PLAYING_BAR);
+                    intent.putExtra("curDuration", audioService.getCurrentDuration() / 1000);
+                    intent.putExtra("totalDuration",Integer.parseInt(audioService.getCurSong().getDuration()) / 1000);
                     startActivity(intent);
                 }
             }
@@ -219,7 +232,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             @Override
             public void onClick(View v) {
                 if (isBound) {
-                    audioService.preSong();
+                    audioService.changeAudio(playlistViewModel.preSong());
                 }
             }
         });
@@ -227,7 +240,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             @Override
             public void onClick(View v) {
                 if (isBound) {
-                    audioService.nextSong();
+                    audioService.changeAudio(playlistViewModel.nextSong());
                 }
             }
         });
@@ -235,19 +248,17 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             @Override
             public void onClick(View v) {
                 if (isBound) {
-                    if (audioService.getState() == AudioService.STATE_PLAY) {
+                    if (audioService.getState() == Playlist.STATE_PLAY) {
                         audioService.playPauseAudio();
-                        //play_pause_btn.setImageResource(R.drawable.ic_round_play_arrow_24);
                     } else {
                         audioService.playPauseAudio();
-                        //play_pause_btn.setImageResource(R.drawable.ic_round_pause_24);
                     }
                 }
             }
         });
     }
 
-    private void setMetaData(MusicFiles musicFiles) {
+    private void setMetaData(Song musicFiles) {
         seekBar.setProgress(0);
         int durationTotal = Integer.parseInt(musicFiles.getDuration()) / 1000;
         song_name.setText(musicFiles.getTitle());
@@ -271,7 +282,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
         } else {
-            playlists = getAllAudio(this);
+            libraryViewModel.loadLocalSong();
             initViewPager();
         }
     }
@@ -280,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_CODE) {
-            playlists = getAllAudio(this);
+            libraryViewModel.loadLocalSong();
             initViewPager();
         } else {
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
@@ -298,8 +309,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
         tabLayout.getTabAt(0).setIcon(R.drawable.ic_round_music_note_24);
         tabLayout.getTabAt(1).setIcon(R.drawable.ic_round_library_music_24);
-        tabLayout.getTabAt(0).setText(viewPagerAdapter.getPageTitle(0));
-        tabLayout.getTabAt(1).setText(viewPagerAdapter.getPageTitle(1));
+        //tabLayout.getTabAt(0).setText(viewPagerAdapter.getPageTitle(0));
+        //tabLayout.getTabAt(1).setText(viewPagerAdapter.getPageTitle(1));
         tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
@@ -351,41 +362,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         }
     }
 
-    public static ArrayList<MusicFiles> getAllAudio(Context context) {
-        ArrayList<String> duplicate = new ArrayList<>();
-        ArrayList<MusicFiles> tempAudioList = new ArrayList<>();
-        Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
-        String[] projection = {
-                MediaStore.Audio.Media.ALBUM,
-                MediaStore.Audio.Media.TITLE,
-                MediaStore.Audio.Media.DURATION,
-                MediaStore.Audio.Media.DATA,
-                MediaStore.Audio.Media.ARTIST,
-                MediaStore.Audio.Media._ID
-        };
-        Cursor cursor = context.getContentResolver().query(uri, projection, null, null, null);
-
-        if (cursor != null && cursor.moveToFirst()) {
-            do {
-                String album = cursor.getString(0);
-                String title = cursor.getString(1);
-                String duration = cursor.getString(2);
-                String path = cursor.getString(3);
-                String artist = cursor.getString(4);
-                String id = cursor.getString(5);
-                MusicFiles musicFiles = new MusicFiles(path, title, artist, album, duration, id);
-
-                tempAudioList.add(musicFiles);
-                if (!(duplicate.contains((album)))) {
-                    albums.add(musicFiles);
-                    duplicate.add(album);
-                }
-            } while (cursor.moveToNext());
-            cursor.close();
-        }
-        return tempAudioList;
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.search, menu);
@@ -403,13 +379,33 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     @Override
     public boolean onQueryTextChange(String newText) {
         String userInput = newText.toLowerCase();
-        ArrayList<MusicFiles> myFiles = new ArrayList<>();
-        for (MusicFiles song : playlists) {
+        ArrayList<Song> myFiles = new ArrayList<>();
+        for (Song song : libraryViewModel.getSongs().getValue()) {
             if (song.getTitle().toLowerCase().contains(userInput)) {
                 myFiles.add(song);
             }
         }
         SongsFragment.musicAdapter.updateList(myFiles);
         return true;
+    }
+
+    public class NotificationReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction() != null) {
+                switch ((intent.getAction())) {
+                    case PLAYBUTTON:
+                        audioService.playPauseAudio();
+                        break;
+                    case PREBUTTON:
+                        audioService.changeAudio(playlistViewModel.preSong());
+                        break;
+                    case NEXTBUTTON:
+                        audioService.changeAudio(playlistViewModel.nextSong());
+                        break;
+                }
+            }
+
+        }
     }
 }

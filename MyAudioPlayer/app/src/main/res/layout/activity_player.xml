@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/main_bg"
     android:orientation="vertical"
-    tools:context=".PlayerActivity">
+    tools:context=".view.PlayerActivity">
 
     <RelativeLayout
         android:id="@+id/layout_top_btn"
