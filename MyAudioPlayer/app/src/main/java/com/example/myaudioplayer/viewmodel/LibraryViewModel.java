@@ -21,8 +21,8 @@ public class LibraryViewModel extends BaseViewModel {
 
     public LibraryViewModel(@NonNull Application application) {
         super(application);
-        songs.setValue(new ArrayList<Song>());
-        albums.setValue(new ArrayList<Album>());
+        songs.setValue(library.getAllSongs());
+        albums.setValue(library.getAlbums());
     }
 
     public MutableLiveData<ArrayList<Song>> getSongs() {
@@ -44,4 +44,5 @@ public class LibraryViewModel extends BaseViewModel {
     {
         return library.getAlbum(name, artist);
     }
+
 }

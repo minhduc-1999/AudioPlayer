@@ -53,13 +53,13 @@ import static com.example.myaudioplayer.audioservice.AudioService.PLAYBUTTON;
 import static com.example.myaudioplayer.audioservice.AudioService.PREBUTTON;
 
 public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
-    public static final String INIT_TASK_DONE = "INIT_TASK_DONE";
+
     public static final String PLAY_NEW_SONG = "PLAY_NEW_SONG";
     public static final String OPEN_PLAYING_BAR = "OPEN_PLAYING_BAR";
     private LibraryViewModel libraryViewModel;
     private PlaylistViewModel playlistViewModel;
 
-    public static final int REQUEST_CODE = 1;
+    //public static final int REQUEST_CODE = 1;
 
     private RelativeLayout nowPlayingBar;
     private ProgressBar seekBar;
@@ -80,21 +80,29 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     private Handler handler = new Handler();
 
-    public static final String MCHANNEL ="MCHANNEL";
+    public static final String MCHANNEL = "MCHANNEL";
+
+    int curDuration;
+    String curSong;
+    String albumName;
+    String artist;
+    int playlistSource;
+    boolean hasRestoreState = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        
+
         libraryViewModel = ViewModelProviders.of(this).get(LibraryViewModel.class);
         playlistViewModel = ViewModelProviders.of(this).get(PlaylistViewModel.class);
 
         registerLiveDataListenner();
-        permission();
+        //permission();
         registerBroadcastReceiver();
         doStartAudioService();
         initView();
+        initViewPager();
         initEventListener();
         createNotificationChannel();
         MainActivity.this.runOnUiThread(new Runnable() {
@@ -116,6 +124,18 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 if (audioBinder != null) {
                     audioService = audioBinder.getService();
                     isBound = true;
+//                    if(hasRestoreState)
+//                    {
+//                        if (!curSong.equals("") && curDuration != -1) {
+//                            playlistViewModel.setQueue(playlistSource, albumName, artist);
+//                            Song song = playlistViewModel.getSongByPath(curSong);
+//                            if(song!= null) {
+//                                playlistViewModel.getCurSong().postValue(song);
+//                                playlistViewModel.setState(Playlist.STATE_PAUSE);
+//                                audioService.changeAudio(song);
+//                            }
+//                        }
+//                    }
                 } else {
                     audioService = null;
                     isBound = false;
@@ -131,17 +151,13 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         playlistViewModel.getState().observe(this, new Observer<Integer>() {
             @Override
             public void onChanged(Integer s) {
-                if(s.equals(Playlist.STATE_PLAY))
-                {
+                if (s.equals(Playlist.STATE_PLAY)) {
                     play_pause_btn.setImageResource(R.drawable.ic_round_pause_24);
                     nowPlayingBar.setVisibility(View.VISIBLE);
-                }
-                else if (s.equals(Playlist.STATE_PAUSE))
-                {
+                } else if (s.equals(Playlist.STATE_PAUSE)) {
                     play_pause_btn.setImageResource(R.drawable.ic_round_play_arrow_24);
                     nowPlayingBar.setVisibility(View.VISIBLE);
-                }
-                else
+                } else
                     nowPlayingBar.setVisibility(View.GONE);
             }
         });
@@ -223,7 +239,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     int state = playlistViewModel.getState().getValue();
                     intent.setAction(OPEN_PLAYING_BAR);
                     intent.putExtra("curDuration", audioService.getCurrentDuration() / 1000);
-                    intent.putExtra("totalDuration",Integer.parseInt(audioService.getCurSong().getDuration()) / 1000);
+                    intent.putExtra("totalDuration", Integer.parseInt(audioService.getCurSong().getDuration()) / 1000);
                     startActivity(intent);
                 }
             }
@@ -278,25 +294,14 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         }
     }
 
-    private void permission() {
-        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
-        } else {
-            libraryViewModel.loadLocalSong();
-            initViewPager();
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == REQUEST_CODE) {
-            libraryViewModel.loadLocalSong();
-            initViewPager();
-        } else {
-            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
-        }
-    }
+//    private void permission() {
+//        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+//            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
+//        } else {
+//            libraryViewModel.loadLocalSong();
+//            initViewPager();
+//        }
+//    }
 
     private void initViewPager() {
         viewPager = findViewById(R.id.viewpager);
@@ -408,4 +413,29 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
         }
     }
+
+//    @Override
+//    protected void onSaveInstanceState(@NonNull Bundle outState) {
+//        super.onSaveInstanceState(outState);
+//        outState.putInt("currentDuration", audioService.getCurrentDuration());
+//        outState.putString("curSong", audioService.getCurSong().getPath());
+//        outState.putInt("source", playlistViewModel.getCurrentSource());
+//        albumName = playlistViewModel.getCurrentAlbumQueue();
+//        if (!albumName.equals(""))
+//            outState.putString("albumName", albumName);
+//        artist = playlistViewModel.getCurrentAlbumArtistQueue();
+//        if (!artist.equals(""))
+//            outState.putString("albumName", artist);
+//    }
+//
+//    @Override
+//    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+//        super.onRestoreInstanceState(savedInstanceState);
+//        curDuration = savedInstanceState.getInt("currentDuration", -1);
+//        curSong = savedInstanceState.getString("curSong", "");
+//        playlistSource = savedInstanceState.getInt("source", -1);
+//        albumName = savedInstanceState.getString("albumName", "");
+//        artist = savedInstanceState.getString("artist", "");
+//        hasRestoreState = true;
+//    }
 }

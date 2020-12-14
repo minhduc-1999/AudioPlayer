@@ -119,4 +119,25 @@ public class Playlist {
     {
         return queue.get(curPos);
     }
+
+    public String getCurrentAlbumQueue() {
+        if(currentSource == PLAYLIST_SOURCE_ALBUM && queue.size() > 0)
+                return queue.get(0).getAlbum();
+            return "";
+    }
+
+    public String getCurrentAlbumArtistQueue() {
+        if(currentSource == PLAYLIST_SOURCE_ALBUM && queue.size() > 0)
+            return queue.get(0).getArtist();
+        return "";
+    }
+
+    public Song getSongByPath(String path) {
+        for (Song song: queue)
+        {
+            if(song.getPath().equals(path))
+                return song;
+        }
+        return null;
+    }
 }

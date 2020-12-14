@@ -11,7 +11,6 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".view.WaitingActivity"></activity>
         <activity
             android:name=".view.AlbumDetailActivity"
             android:theme="@style/ThemeNAB" />
@@ -24,12 +23,16 @@
         <activity
             android:name=".view.PlayerActivity"
             android:theme="@style/ThemeNAB" />
-        <activity android:name=".view.MainActivity">
+        <activity android:name=".view.WaitingActivity"
+            android:theme="@style/ThemeNAB">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+
+        <activity android:name=".view.MainActivity">
         </activity>
 
         <receiver android:name="android.content.BroadcastReceiver">

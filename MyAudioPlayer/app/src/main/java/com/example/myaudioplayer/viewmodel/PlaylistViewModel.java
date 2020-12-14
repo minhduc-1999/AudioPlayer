@@ -80,14 +80,39 @@ public class PlaylistViewModel extends BaseViewModel {
     }
     public void setQueue(int source, String name, String artist)
     {
+        if(source == playlist.getCurrentSource())
+            return;
         if(source == Playlist.PLAYLIST_SOURCE_SONG)
             playlist.setQueue(library.getAllSongs());
         else if(source == Playlist.PLAYLIST_SOURCE_ALBUM) {
             Album album = library.getAlbum(name, artist);
             if(album != null)
-                playlist.setQueue(album .getSongs());
+                playlist.setQueue(album.getSongs());
             else
                 playlist.setQueue(library.getAllSongs());
         }
+        playlist.setCurrentSource(source);
+    }
+    public String getCurrentAlbumQueue()
+    {
+        return playlist.getCurrentAlbumQueue();
+    }
+    public String getCurrentAlbumArtistQueue()
+    {
+        return playlist.getCurrentAlbumArtistQueue();
+    }
+    public int getCurrentSource()
+    {
+        return playlist.getCurrentSource();
+    }
+
+    public void setCurrentSource(int source)
+    {
+        playlist.setCurrentSource(source);
+    }
+
+    public Song getSongByPath(String path)
+    {
+        return playlist.getSongByPath(path);
     }
 }

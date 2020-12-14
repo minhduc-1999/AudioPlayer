@@ -44,6 +44,7 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
     }
 
     private IBinder mBinder;
+
     public void changeAudio(Song song) {
         if (mediaPlayer != null) {
             mediaPlayer.stop();
@@ -58,6 +59,7 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
         setState(STATE_PLAY);
         sendServiceBroadcast(BRC_SERVICE_FILTER, BRC_AUDIO_CHANGE);
     }
+
     public AudioService() {
 
     }
@@ -84,7 +86,8 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
 
     @Override
     public void onDestroy() {
-        mediaPlayer.release();
+        if (mediaPlayer != null)
+            mediaPlayer.release();
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.cancel(0);
         super.onDestroy();
@@ -146,6 +149,7 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
             return AudioService.this;
         }
     }
+
     public void showNotification(int playPauseBtn) {
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         retriever.setDataSource(curSong.getPath());
