@@ -30,7 +30,18 @@ public class Playlist {
     private boolean isShuffle, isRepeat;
     private int currentSource;
     private int state;
+    //*********************
+    //use for restore state
+    private int curDuration;
 
+    public int getCurDuration() {
+        return curDuration;
+    }
+
+    public void setCurDuration(int curDuration) {
+        this.curDuration = curDuration;
+    }
+    //****************************
     public int getState() {
         return state;
     }
@@ -57,10 +68,20 @@ public class Playlist {
         this.queue = queue;
     }
 
-    public int getCurPos() {
-        return curPos;
-    }
+    public int setCurPos(String path)
+    {
+        for (Song song: queue)
+        {
+            if(song.getPath().equals(path))
+            {
+                this.curPos = queue.indexOf(song);
+                return this.curPos;
+            }
 
+        }
+        this.curPos = -1;
+        return this.curPos;
+    }
     public void setCurPos(int curPos) {
         if(curPos >=0 && curPos < queue.size())
             this.curPos = curPos;
@@ -117,7 +138,9 @@ public class Playlist {
     }
     public Song getCurSong()
     {
-        return queue.get(curPos);
+        if(curPos >= 0 && curPos < queue.size())
+            return queue.get(curPos);
+        return null;
     }
 
     public String getCurrentAlbumQueue() {
@@ -132,12 +155,4 @@ public class Playlist {
         return "";
     }
 
-    public Song getSongByPath(String path) {
-        for (Song song: queue)
-        {
-            if(song.getPath().equals(path))
-                return song;
-        }
-        return null;
-    }
 }

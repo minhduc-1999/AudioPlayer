@@ -6,6 +6,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.AudioAttributes;
 import android.media.MediaMetadataRetriever;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -13,6 +14,7 @@ import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
 
+import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
@@ -21,6 +23,8 @@ import com.example.myaudioplayer.view.PlayerActivity;
 import com.example.myaudioplayer.R;
 
 import com.example.myaudioplayer.audiomodel.Song;
+
+import java.io.IOException;
 
 import static com.example.myaudioplayer.view.MainActivity.MCHANNEL;
 import static com.example.myaudioplayer.audiomodel.Playlist.*;
@@ -45,16 +49,28 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
 
     private IBinder mBinder;
 
-    public void changeAudio(Song song) {
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    public void changeAudio(Song song) throws IOException {
         if (mediaPlayer != null) {
             mediaPlayer.stop();
             mediaPlayer.release();
-            setState(STATE_NONE);
+            mediaPlayer = null;
         }
         curSong = song;
         Uri uri = Uri.parse(song.getPath());
-        mediaPlayer = MediaPlayer.create(this, uri);
-        mediaPlayer.setOnCompletionListener(this);
+//        mediaPlayer = MediaPlayer.create(this, uri);
+//        mediaPlayer.setOnCompletionListener(this);
+//        mediaPlayer.start();
+
+        mediaPlayer = new MediaPlayer();
+        mediaPlayer.setAudioAttributes(
+                new AudioAttributes.Builder()
+                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .setUsage(AudioAttributes.USAGE_MEDIA)
+                        .build()
+        );
+        mediaPlayer.setDataSource(getApplicationContext(), uri);
+        mediaPlayer.prepare();
         mediaPlayer.start();
         setState(STATE_PLAY);
         sendServiceBroadcast(BRC_SERVICE_FILTER, BRC_AUDIO_CHANGE);
@@ -86,10 +102,10 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
 
     @Override
     public void onDestroy() {
-        if (mediaPlayer != null)
-            mediaPlayer.release();
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notificationManager.cancel(0);
+        if (mediaPlayer != null)
+            mediaPlayer.release();
         super.onDestroy();
     }
 
@@ -121,7 +137,7 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
 
     public int getCurrentDuration() {
         if (mediaPlayer != null)
-            return mediaPlayer.getCurrentPosition();
+            return mediaPlayer.getCurrentPosition() / 1000;
         return -1;
     }
 

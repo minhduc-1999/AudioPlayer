@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -16,6 +17,7 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
@@ -29,6 +31,8 @@ import com.example.myaudioplayer.audiomodel.Song;
 import com.example.myaudioplayer.audioservice.AudioService;
 import com.example.myaudioplayer.viewmodel.PlaylistViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.io.IOException;
 
 import static com.example.myaudioplayer.audioservice.AudioService.NEXTBUTTON;
 import static com.example.myaudioplayer.audioservice.AudioService.PLAYBUTTON;
@@ -88,7 +92,7 @@ public class PlayerActivity extends AppCompatActivity {
             @Override
             public void run() {
                 if (audioService != null) {
-                    int mCurrentPosition = audioService.getCurrentDuration() / 1000;
+                    int mCurrentPosition = audioService.getCurrentDuration();
                     seekBar.setProgress(mCurrentPosition);
                     duration_played.setText(formattedTime(mCurrentPosition));
                 }
@@ -121,18 +125,23 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void registerBroadcastReceiver() {
         broadcastReceiver = new BroadcastReceiver() {
+            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void onReceive(Context context, Intent intent) {
                 String info = intent.getStringExtra("info");
                 switch (info) {
                     case AudioService.BRC_AUDIO_CHANGE:
-                        //playlistViewModel.getCurSong().setValue(audioService.getCurSong());
+                        playlistViewModel.getCurSong().setValue(audioService.getCurSong());
                         break;
                     case AudioService.BRC_PLAYING_STATE_CHANGE:
                         playlistViewModel.setState(audioService.getState());
                         break;
                     case AudioService.BRC_AUDIO_COMPLETED:
-                        audioService.changeAudio(playlistViewModel.nextSong());
+                        try {
+                            audioService.changeAudio(playlistViewModel.nextSong());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     default:
                 }
 
@@ -144,6 +153,7 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void registerLiveDataListenner() {
         playlistViewModel.getmBinder().observe(this, new Observer<AudioService.AudioBinder>() {
+            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
             @Override
             public void onChanged(AudioService.AudioBinder audioBinder) {
                 if (audioBinder != null) {
@@ -151,7 +161,14 @@ public class PlayerActivity extends AppCompatActivity {
                     isBound = true;
                     if (action.equals(MainActivity.PLAY_NEW_SONG)) {
                         Song temp = playlistViewModel.play(position);
-                        audioService.changeAudio(temp);
+                        if(temp != null)
+                        {
+                            try {
+                                audioService.changeAudio(temp);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
                     }
                     else
                     {
@@ -209,7 +226,7 @@ public class PlayerActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
-        if (playlistViewModel.getmBinder() != null) {
+        if (playlistViewModel.getmBinder().getValue() != null) {
             unbindService(playlistViewModel.getServiceConnection());
         }
         super.onDestroy();
@@ -229,9 +246,14 @@ public class PlayerActivity extends AppCompatActivity {
             public void run() {
                 super.run();
                 nextBtn.setOnClickListener(new View.OnClickListener() {
+                    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
                     @Override
                     public void onClick(View v) {
-                        nextBtnClick();
+                        try {
+                            nextBtnClick();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 });
             }
@@ -239,7 +261,8 @@ public class PlayerActivity extends AppCompatActivity {
         nextThread.start();
     }
 
-    private void nextBtnClick() {
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private void nextBtnClick() throws IOException {
         if (isBound) {
             audioService.changeAudio(playlistViewModel.nextSong());
         }
@@ -252,9 +275,14 @@ public class PlayerActivity extends AppCompatActivity {
             public void run() {
                 super.run();
                 preBtn.setOnClickListener(new View.OnClickListener() {
+                    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
                     @Override
                     public void onClick(View v) {
-                        preBtnClick();
+                        try {
+                            preBtnClick();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 });
             }
@@ -262,7 +290,8 @@ public class PlayerActivity extends AppCompatActivity {
         preThread.start();
     }
 
-    private void preBtnClick() {
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+    private void preBtnClick() throws IOException {
         if (isBound) {
             audioService.changeAudio(playlistViewModel.preSong());
         }
@@ -315,9 +344,10 @@ public class PlayerActivity extends AppCompatActivity {
         }
         else
         {
-            int totalDuration = getIntent().getIntExtra("totalDuration", 300);
-            int curDuration = getIntent().getIntExtra("curDuration", 0);
+            Bundle bundle = getIntent().getExtras();
+            int totalDuration = bundle.getInt("totalDuration", 300);
             seekBar.setMax(totalDuration);
+            int curDuration = bundle.getInt("curDuration", 0);
             seekBar.setProgress(curDuration);
             duration_played.setText(formattedTime(curDuration));
             duration_total.setText(formattedTime(totalDuration));
@@ -382,14 +412,17 @@ public class PlayerActivity extends AppCompatActivity {
         int durationTotal = Integer.parseInt(musicFiles.getDuration()) / 1000;
         duration_total.setText(formattedTime(durationTotal));
         seekBar.setMax(durationTotal);
-        int curDuration;
-        if (action.equals(MainActivity.PLAY_NEW_SONG)) {
-            curDuration = 0;
-        } else {
-            curDuration = audioService.getCurrentDuration() / 1000;
+        if(audioService != null)
+        {
+            int curDuration = audioService.getCurrentDuration();
+            seekBar.setProgress(curDuration);
+            duration_played.setText(formattedTime(curDuration));
         }
-        seekBar.setProgress(curDuration);
-        duration_played.setText(formattedTime(curDuration));
+        else
+        {
+            duration_played.setText(formattedTime(0));
+        }
+
         song_name.setText(musicFiles.getTitle());
         artist_name.setText(musicFiles.getArtist());
 

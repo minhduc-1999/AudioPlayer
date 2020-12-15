@@ -16,7 +16,11 @@ public class PlaylistViewModel extends BaseViewModel {
         setState(playlist.getState());
         setShuffle(playlist.isShuffle());
         setRepeat(playlist.isRepeat());
+        Song currSong = playlist.getCurSong();
+        if (currSong != null)
+            this.curSong.postValue(playlist.getCurSong());
     }
+
     private Playlist playlist = Playlist.getInstance();
     private Library library = Library.getInstance();
     private MutableLiveData<Song> curSong = new MutableLiveData<>();
@@ -45,74 +49,80 @@ public class PlaylistViewModel extends BaseViewModel {
         return isRepeat;
     }
 
-    public void setShuffle(Boolean isShuffle)
-    {
+    public void setShuffle(Boolean isShuffle) {
         this.isShuffle.setValue(isShuffle);
         playlist.setShuffle(isShuffle);
     }
 
-    public void setRepeat(Boolean isRepeat)
-    {
+    public void setRepeat(Boolean isRepeat) {
         this.isRepeat.setValue(isRepeat);
         playlist.setRepeat(isRepeat);
     }
 
-    public Song nextSong()
-    {
+    public Song nextSong() {
         Song temp = playlist.nextSong();
         if (temp != null)
             curSong.postValue(temp);
         return temp;
     }
-    public Song preSong()
-    {
+
+    public Song preSong() {
         Song temp = playlist.preSong();
         if (temp != null)
             curSong.postValue(temp);
         return temp;
     }
-    public Song play(int index)
-    {
+
+    public Song play(int index) {
         playlist.setState(Playlist.STATE_PLAY);
         playlist.setCurPos(index);
-        this.curSong.postValue(playlist.getCurSong());
         return playlist.getCurSong();
     }
-    public void setQueue(int source, String name, String artist)
-    {
-        if(source == playlist.getCurrentSource())
+
+    public void setQueue(int source, String name, String artist) {
+        if (source == playlist.getCurrentSource())
             return;
-        if(source == Playlist.PLAYLIST_SOURCE_SONG)
+        if (source == Playlist.PLAYLIST_SOURCE_SONG)
             playlist.setQueue(library.getAllSongs());
-        else if(source == Playlist.PLAYLIST_SOURCE_ALBUM) {
+        else if (source == Playlist.PLAYLIST_SOURCE_ALBUM) {
             Album album = library.getAlbum(name, artist);
-            if(album != null)
+            if (album != null)
                 playlist.setQueue(album.getSongs());
             else
                 playlist.setQueue(library.getAllSongs());
         }
         playlist.setCurrentSource(source);
     }
-    public String getCurrentAlbumQueue()
-    {
+
+    public String getCurrentAlbumQueue() {
         return playlist.getCurrentAlbumQueue();
     }
-    public String getCurrentAlbumArtistQueue()
-    {
+
+    public String getCurrentAlbumArtistQueue() {
         return playlist.getCurrentAlbumArtistQueue();
     }
-    public int getCurrentSource()
-    {
+
+    public int getCurrentSource() {
         return playlist.getCurrentSource();
     }
 
-    public void setCurrentSource(int source)
-    {
-        playlist.setCurrentSource(source);
+    //use for restore state
+    public int getCurDuration() {
+        return playlist.getCurDuration();
     }
 
-    public Song getSongByPath(String path)
+    public void setCurDuration(int cur) {
+        playlist.setCurDuration(cur);
+    }
+
+    public void setCurPos(String path) {
+        int res = playlist.setCurPos(path);
+        if (res != -1)
+            curSong.postValue(playlist.getCurSong());
+    }
+
+    public Song getCurrentSong()
     {
-        return playlist.getSongByPath(path);
+        return playlist.getCurSong();
     }
 }
