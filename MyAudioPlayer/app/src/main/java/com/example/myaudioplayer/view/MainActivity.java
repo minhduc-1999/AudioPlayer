@@ -45,6 +45,7 @@ import com.example.myaudioplayer.R;
 import com.example.myaudioplayer.audiomodel.Playlist;
 import com.example.myaudioplayer.audiomodel.Song;
 import com.example.myaudioplayer.audioservice.AudioService;
+import com.example.myaudioplayer.notification.NotificationReceiver;
 import com.example.myaudioplayer.viewmodel.LibraryViewModel;
 import com.example.myaudioplayer.viewmodel.PlaylistViewModel;
 import com.google.android.material.tabs.TabLayout;
@@ -53,6 +54,7 @@ import com.google.android.material.tabs.TabLayout;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import static com.example.myaudioplayer.audioservice.AudioService.BRC_SERVICE_FILTER;
 import static com.example.myaudioplayer.audioservice.AudioService.NEXTBUTTON;
 import static com.example.myaudioplayer.audioservice.AudioService.PLAYBUTTON;
 import static com.example.myaudioplayer.audioservice.AudioService.PREBUTTON;
@@ -201,33 +203,65 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, final Intent intent) {
-                workerThread = new Thread(){
+                workerThread = new Thread() {
                     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
                     @Override
                     public void run() {
                         super.run();
-                        String info = intent.getStringExtra("info");
-                        switch (info) {
-                            case AudioService.BRC_AUDIO_CHANGE:
-                                playlistViewModel.getCurSong().postValue(audioService.getCurSong());
-                                break;
-                            case AudioService.BRC_PLAYING_STATE_CHANGE:
-                                playlistViewModel.setState(audioService.getState());
-                                break;
-                            case AudioService.BRC_AUDIO_COMPLETED:
-                                try {
-                                    audioService.changeAudio(playlistViewModel.nextSong());
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
-                            default:
+                        String action = intent.getAction();
+                        if (action.equals(BRC_SERVICE_FILTER)) {
+                            String info = intent.getStringExtra("info");
+                            switch (info) {
+                                case AudioService.BRC_AUDIO_CHANGE:
+                                    playlistViewModel.getCurSong().postValue(audioService.getCurSong());
+                                    break;
+                                case AudioService.BRC_PLAYING_STATE_CHANGE:
+                                    playlistViewModel.setState(audioService.getState());
+                                    break;
+                                case AudioService.BRC_AUDIO_COMPLETED:
+                                    try {
+                                        audioService.changeAudio(playlistViewModel.nextSong());
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
+                        else
+                            if(action.equals(NotificationReceiver.BRC_NOTIFY_FILTER))
+                            {
+                                String job = intent.getStringExtra("job");
+                                switch (job) {
+                                    case NotificationReceiver.BRC_NOTIFY_NEXT:
+                                        try {
+                                            audioService.changeAudio(playlistViewModel.nextSong());
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                        break;
+                                    case NotificationReceiver.BRC_NOTIFY_PRE:
+                                        try {
+                                            audioService.changeAudio(playlistViewModel.preSong());
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                        break;
+                                    case NotificationReceiver.BRC_NOTIFY_PLAY:
+                                        audioService.playPauseAudio();
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
                     }
                 };
                 workerThread.start();
             }
         };
         IntentFilter intentFilter = new IntentFilter(AudioService.BRC_SERVICE_FILTER);
+        intentFilter.addAction(NotificationReceiver.BRC_NOTIFY_FILTER);
         LocalBroadcastManager.getInstance(this).registerReceiver(broadcastReceiver, intentFilter);
     }
 
@@ -297,7 +331,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         int durationTotal = Integer.parseInt(musicFiles.getDuration()) / 1000;
         seekBar.setMax(durationTotal);
         int curDuration = 0;
-        if(audioService != null)
+        if (audioService != null)
             curDuration = audioService.getCurrentDuration();
         seekBar.setProgress(curDuration);
         song_name.setText(musicFiles.getTitle());
@@ -405,35 +439,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         }
         SongsFragment.musicAdapter.updateList(myFiles);
         return true;
-    }
-
-    public class NotificationReceiver extends BroadcastReceiver {
-        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (intent.getAction() != null) {
-                switch ((intent.getAction())) {
-                    case PLAYBUTTON:
-                        audioService.playPauseAudio();
-                        break;
-                    case PREBUTTON:
-                        try {
-                            audioService.changeAudio(playlistViewModel.preSong());
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        break;
-                    case NEXTBUTTON:
-                        try {
-                            audioService.changeAudio(playlistViewModel.nextSong());
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                        break;
-                }
-            }
-
-        }
     }
 
 //    @Override

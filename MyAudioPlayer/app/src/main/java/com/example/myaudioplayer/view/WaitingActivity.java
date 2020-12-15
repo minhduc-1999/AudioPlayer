@@ -52,7 +52,7 @@ public class WaitingActivity extends AppCompatActivity {
                     super.run();
                     libraryViewModel.loadLocalSong();
                     loadAppState();
-                    sleep(5000);  //Delay of 5 seconds
+                    sleep(10000);  //Delay of 5 seconds
                 } catch (Exception e) {
 
                 } finally {

@@ -12,17 +12,20 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.IBinder;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.example.myaudioplayer.notification.NotificationReceiver;
 import com.example.myaudioplayer.view.MainActivity;
-import com.example.myaudioplayer.view.PlayerActivity;
+
 import com.example.myaudioplayer.R;
 
 import com.example.myaudioplayer.audiomodel.Song;
+import com.example.myaudioplayer.view.PlayerActivity;
 
 import java.io.IOException;
 
@@ -31,7 +34,7 @@ import static com.example.myaudioplayer.audiomodel.Playlist.*;
 
 
 public class AudioService extends Service implements MediaPlayer.OnCompletionListener {
-    public static final String BRC_SERVICE_FILTER = "BRC_SERVICE";
+    public static final String BRC_SERVICE_FILTER = "BRC_SERVICE_ACTION";
     public static final String BRC_AUDIO_CHANGE = "BRC_AUDIO_CHANGE";
     public static final String BRC_AUDIO_COMPLETED = "BRC_AUDIO_COMPLETED";
     public static final String BRC_PLAYING_STATE_CHANGE = "BRC_PLAYING_STATE_CHANGE";
@@ -55,6 +58,7 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
             mediaPlayer.stop();
             mediaPlayer.release();
             mediaPlayer = null;
+            this.state = STATE_NONE;
         }
         curSong = song;
         Uri uri = Uri.parse(song.getPath());
@@ -126,18 +130,20 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
         if (state == STATE_PAUSE) {
             mediaPlayer.start();
             setState(STATE_PLAY);
-            showNotification(R.drawable.ic_round_pause_24);
-
         } else {
             mediaPlayer.pause();
             setState(STATE_PAUSE);
-            showNotification(R.drawable.ic_round_play_arrow_24);
         }
     }
 
     public int getCurrentDuration() {
         if (mediaPlayer != null)
-            return mediaPlayer.getCurrentPosition() / 1000;
+            try {
+                return mediaPlayer.getCurrentPosition() / 1000;
+            } catch (IllegalStateException e) {
+                return -1;
+            }
+
         return -1;
     }
 
@@ -145,6 +151,10 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
         if (this.state == state)
             return;
         this.state = state;
+        if(state == STATE_PLAY)
+            showNotification(R.drawable.ic_round_pause_24);
+        else if(state == STATE_PAUSE)
+            showNotification(R.drawable.ic_round_play_arrow_24);
         sendServiceBroadcast(BRC_SERVICE_FILTER, BRC_PLAYING_STATE_CHANGE);
     }
 
@@ -176,13 +186,18 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
         } else {
             bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.music_default);
         }
-        Intent intent = new Intent(this, MainActivity.class);
+        Intent intent = new Intent(this, PlayerActivity.class);
+        intent.setAction(MainActivity.OPEN_PLAYING_BAR);
+        Bundle bundle = new Bundle();
+        bundle.putInt("curDuration", this.getCurrentDuration());
+        bundle.putInt("totalDuration", Integer.parseInt(curSong.getDuration()) / 1000);
+        intent.putExtras(bundle);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, intent, 0);
-        Intent prevIntent = new Intent(this, MainActivity.NotificationReceiver.class).setAction(PREBUTTON);
+        Intent prevIntent = new Intent(this, NotificationReceiver.class).setAction(PREBUTTON);
         PendingIntent prevPendingIntent = PendingIntent.getBroadcast(this, 0, prevIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        Intent playIntent = new Intent(this, MainActivity.NotificationReceiver.class).setAction(PLAYBUTTON);
+        Intent playIntent = new Intent(this, NotificationReceiver.class).setAction(PLAYBUTTON);
         PendingIntent playPendingIntent = PendingIntent.getBroadcast(this, 0, playIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        Intent nextIntent = new Intent(this, MainActivity.NotificationReceiver.class).setAction(NEXTBUTTON);
+        Intent nextIntent = new Intent(this, NotificationReceiver.class).setAction(NEXTBUTTON);
         PendingIntent nextPendingIntent = PendingIntent.getBroadcast(this, 0, nextIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
         NotificationCompat.Builder mBuilder =
@@ -197,7 +212,7 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
                     .addAction(playPauseBtn, "Play", playPendingIntent)
                     .addAction(R.drawable.ic_round_skip_next_24, "Next", nextPendingIntent)
                     .setStyle(new androidx.media.app.NotificationCompat.MediaStyle())
-                    .setPriority(NotificationCompat.PRIORITY_MIN)
+                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                     .setOngoing(true)
                     .setLocalOnly(true)
                     .setNotificationSilent()
