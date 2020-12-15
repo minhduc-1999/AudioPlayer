@@ -1,6 +1,8 @@
 package com.example.myaudioplayer.view;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.ActionBar;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
@@ -22,6 +24,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,9 +32,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SearchView;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
@@ -55,9 +55,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import static com.example.myaudioplayer.audioservice.AudioService.BRC_SERVICE_FILTER;
-import static com.example.myaudioplayer.audioservice.AudioService.NEXTBUTTON;
-import static com.example.myaudioplayer.audioservice.AudioService.PLAYBUTTON;
-import static com.example.myaudioplayer.audioservice.AudioService.PREBUTTON;
 
 public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
 
@@ -76,6 +73,9 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private ViewPager viewPager;
     private TabLayout tabLayout;
 
+    //Action bar view
+    SearchView searchView;
+    //
     private boolean isBound = false;
 
     private ImageView pre_btn;
@@ -91,10 +91,15 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     private Thread workerThread;
 
+    @SuppressLint("WrongConstant")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        this.getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+        getSupportActionBar().setDisplayShowCustomEnabled(true);
+        getSupportActionBar().setCustomView(R.layout.custom_action_bar);
+        getSupportActionBar().setElevation(0);
 
         libraryViewModel = ViewModelProviders.of(this).get(LibraryViewModel.class);
         playlistViewModel = ViewModelProviders.of(this).get(PlaylistViewModel.class);
@@ -274,6 +279,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         this.pre_btn = findViewById(R.id.id_pre);
         this.play_pause_btn = findViewById(R.id.play_pause);
         this.seekBar = findViewById(R.id.seekBar);
+
+        //init action bar view
+        searchView = getSupportActionBar().getCustomView().findViewById(R.id.search_bar);
+        searchView.setOnQueryTextListener(this);
     }
 
     private void initEventListener() {
@@ -414,14 +423,14 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.search, menu);
-        MenuItem menuItem = menu.findItem(R.id.search_option);
-        SearchView searchView = (SearchView) menuItem.getActionView();
-        searchView.setOnQueryTextListener(this);
-        return super.onCreateOptionsMenu(menu);
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        getMenuInflater().inflate(R.menu.search, menu);
+//        MenuItem menuItem = menu.findItem(R.id.search_option);
+//        SearchView searchView = (SearchView) menuItem.getActionView();
+//        searchView.setOnQueryTextListener(this);
+//        return super.onCreateOptionsMenu(menu);
+//    }
 
     @Override
     public boolean onQueryTextSubmit(String query) {
