@@ -6,23 +6,57 @@
     android:layout_height="match_parent"
     android:background="@color/colorPrimary"
     tools:context=".view.AlbumDetailActivity">
+
     <ImageView
-        android:layout_width="match_parent"
-        android:layout_height="300dp"
         android:id="@+id/albumPhoto"
-        android:src="@drawable/music_default"
-        android:scaleType="centerCrop"
-        />
-    <ImageView
         android:layout_width="match_parent"
         android:layout_height="300dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/music_default"/>
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_below="@+id/albumPhoto"
+        android:layout_marginTop="-200dp"
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:textColor="@color/colorAccent"
+            android:gravity="center"
+            android:textSize="30dp"
+            android:id="@+id/album_name"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/album_name"
+            android:layout_centerHorizontal="true"
+            android:gravity="center"
+            android:layout_marginTop="3dp"
+            android:textSize="15dp"
+            android:layout_centerVertical="true"
+            android:textColor="@color/colorAccent"
+            android:id="@+id/album_artist"/>
+    </RelativeLayout>
+    <ImageView
         android:id="@+id/gradient"
-        android:src="@drawable/gradient_bg"
-        />
-    <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="300dp"
+        android:src="@drawable/gradient_bg" />
+    <ImageView
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:id="@+id/back_btn"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="10dp"
+        android:layout_marginRight="10dp"
+        android:src="@drawable/ic_round_chevron_left_24"/>
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_margin="20dp"
+        android:layout_height="match_parent"
         android:layout_below="@+id/albumPhoto" />
 
 

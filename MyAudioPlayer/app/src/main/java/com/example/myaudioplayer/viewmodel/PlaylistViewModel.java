@@ -75,7 +75,7 @@ public class PlaylistViewModel extends BaseViewModel {
 
     public Song play(int index) {
         playlist.setState(Playlist.STATE_PLAY);
-        if(playlist.setNowSong(index))
+        if (playlist.setNowSong(index))
             return playlist.getNowSong();
         return null;
     }
@@ -122,8 +122,7 @@ public class PlaylistViewModel extends BaseViewModel {
             curSong.postValue(playlist.getNowSong());
     }
 
-    public Song getCurrentSong()
-    {
+    public Song getCurrentSong() {
         return playlist.getNowSong();
     }
 }

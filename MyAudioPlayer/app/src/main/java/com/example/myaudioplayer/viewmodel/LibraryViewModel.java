@@ -44,11 +44,19 @@ public class LibraryViewModel extends BaseViewModel {
     {
         return library.getAlbum(name, artist);
     }
-    public void sortLibrary(int order)
+    public void sortLibrary(final int order)
     {
-        if(library.sortSongs(order))
-        {
-            songs.postValue(library.getAllSongs());
-        }
+        Thread sortThread = new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                if(library.sortSongs(order))
+                {
+                    songs.postValue(library.getAllSongs());
+                }
+            }
+        };
+        sortThread.start();
+
     }
 }

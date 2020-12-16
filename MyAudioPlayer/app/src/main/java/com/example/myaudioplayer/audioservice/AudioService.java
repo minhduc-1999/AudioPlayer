@@ -67,6 +67,7 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
 //        mediaPlayer.start();
 
         mediaPlayer = new MediaPlayer();
+        mediaPlayer.setOnCompletionListener(this);
         mediaPlayer.setAudioAttributes(
                 new AudioAttributes.Builder()
                         .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
