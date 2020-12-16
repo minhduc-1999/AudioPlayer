@@ -18,7 +18,6 @@ public class Playlist {
     }
     private Playlist() {
         queue = new ArrayList<>();
-        curPos = -1;
         isRepeat = false;
         isShuffle = false;
         state = STATE_NONE;
@@ -26,10 +25,10 @@ public class Playlist {
     }
 
     private ArrayList<Song> queue;
-    private int curPos;
     private boolean isShuffle, isRepeat;
     private int currentSource;
     private int state;
+    private Song nowSong;
     //*********************
     //use for restore state
     private int curDuration;
@@ -68,23 +67,27 @@ public class Playlist {
         this.queue = queue;
     }
 
-    public int setCurPos(String path)
+    public boolean setNowSong(String path)
     {
         for (Song song: queue)
         {
             if(song.getPath().equals(path))
             {
-                this.curPos = queue.indexOf(song);
-                return this.curPos;
+                nowSong = song;
+                return true;
             }
-
         }
-        this.curPos = -1;
-        return this.curPos;
+        nowSong = null;
+        return false;
     }
-    public void setCurPos(int curPos) {
+    public boolean setNowSong(int curPos) {
         if(curPos >=0 && curPos < queue.size())
-            this.curPos = curPos;
+        {
+            nowSong = queue.get(curPos);
+            return true;
+        }
+        nowSong = null;
+        return false;
     }
 
     public boolean isShuffle() {
@@ -110,37 +113,33 @@ public class Playlist {
 
     public Song nextSong()
     {
-        int position = -1;
+        if(nowSong == null || queue == null || queue.size() == 0)
+            return null;
+        int position = queue.indexOf(nowSong);
         if (isShuffle && !isRepeat) {
             position = getRandom(queue.size() - 1);
         } else if (!isShuffle && !isRepeat) {
-            position = (curPos + 1) % queue.size();
+            position = (position + 1) % queue.size();
         }
-        if (position != -1)
-            curPos = position;
-        if(curPos >=0 && curPos < queue.size())
-            return queue.get(curPos);
-        return null;
+        nowSong = queue.get(position);
+        return nowSong;
     }
     public Song preSong()
     {
-        int position = -1;
+        if(nowSong == null || queue == null || queue.size() == 0)
+        return null;
+        int position = queue.indexOf(nowSong);
         if (isShuffle && !isRepeat) {
             position = getRandom(queue.size() - 1);
         } else if (!isShuffle && !isRepeat) {
-            position = (curPos - 1 + queue.size()) % queue.size();
+            position = (position - 1 + queue.size()) % queue.size();
         }
-        if (position != -1)
-            curPos = position;
-        if(curPos >=0 && curPos < queue.size())
-            return queue.get(curPos);
-        return null;
+        nowSong = queue.get(position);
+        return nowSong;
     }
-    public Song getCurSong()
+    public Song getNowSong()
     {
-        if(curPos >= 0 && curPos < queue.size())
-            return queue.get(curPos);
-        return null;
+        return this.nowSong;
     }
 
     public String getCurrentAlbumQueue() {

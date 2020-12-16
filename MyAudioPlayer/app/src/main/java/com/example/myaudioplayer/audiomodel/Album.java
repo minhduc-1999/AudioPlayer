@@ -7,13 +7,13 @@ import java.util.Date;
 
 public class Album {
     private String name;
-    private String yearRelease;
+    private String date;
     private ArrayList<Song> songs;
     private String artist;
 
-    public Album(String name, String yearRelease, String artist) {
+    public Album(String name, String date, String artist) {
         this.name = name;
-        this.yearRelease = yearRelease;
+        this.date = date;
         this.artist = artist;
         songs = new ArrayList<>();
     }
@@ -22,12 +22,12 @@ public class Album {
         return artist;
     }
 
-    public String getYearRelease() {
-        return yearRelease;
+    public String getDate() {
+        return date;
     }
 
-    public void setYearRelease(String yearRelease) {
-        this.yearRelease = yearRelease;
+    public void setDate(String yearRelease) {
+        this.date = yearRelease;
     }
 
     public void setArtist(String artist) {

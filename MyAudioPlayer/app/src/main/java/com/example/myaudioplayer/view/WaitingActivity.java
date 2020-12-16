@@ -5,13 +5,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProviders;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -19,16 +16,25 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.example.myaudioplayer.R;
+import com.example.myaudioplayer.audiomodel.Library;
 import com.example.myaudioplayer.audiomodel.Playlist;
-import com.example.myaudioplayer.audioservice.AudioService;
 import com.example.myaudioplayer.viewmodel.LibraryViewModel;
 import com.example.myaudioplayer.viewmodel.PlaylistViewModel;
 
 public class WaitingActivity extends AppCompatActivity {
     private LibraryViewModel libraryViewModel;
     private PlaylistViewModel playlistViewModel;
-    boolean hasPermission;
+    private int sortOrder;
+    private boolean hasPermission;
+    private int curDuration;
+    private String curSong;
+    private int source;
+    private String albumName;
+    private String artist;
+    private boolean shuffle;
+    private boolean repeat;
     public static final int REQUEST_CODE = 1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,8 +46,7 @@ public class WaitingActivity extends AppCompatActivity {
         playlistViewModel = ViewModelProviders.of(this).get(PlaylistViewModel.class);
 
         hasPermission = false;
-        while (!hasPermission)
-        {
+        while (!hasPermission) {
             permission();
         }
         Thread welcomeThread = new Thread() {
@@ -50,14 +55,16 @@ public class WaitingActivity extends AppCompatActivity {
             public void run() {
                 try {
                     super.run();
-                    libraryViewModel.loadLocalSong();
                     loadAppState();
-                    sleep(10000);  //Delay of 5 seconds
+                    libraryViewModel.loadLocalSong(sortOrder);
+                    setRestoredState();
+                    sleep(5000);  //Delay of 5 seconds
                 } catch (Exception e) {
 
                 } finally {
                     Intent i = new Intent(WaitingActivity.this,
                             MainActivity.class);
+                    i.putExtra("sortOrder", sortOrder);
                     startActivity(i);
                     finish();
                 }
@@ -65,6 +72,7 @@ public class WaitingActivity extends AppCompatActivity {
         };
         welcomeThread.start();
     }
+
     private void permission() {
         if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(WaitingActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
@@ -82,26 +90,30 @@ public class WaitingActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(WaitingActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
         }
     }
-    public void loadAppState()
-    {
-        SharedPreferences sharedPreferences= this.getSharedPreferences("MusicPlayerSetting", Context.MODE_PRIVATE);
 
-        if(sharedPreferences!= null) {
-            int curDuration = sharedPreferences.getInt("currentDuration", -1);
-            String curSong = sharedPreferences.getString("curSong","");
-            int source = sharedPreferences.getInt("source", -1);
-            String albumName = sharedPreferences.getString("albumName", "");
-            String artist = sharedPreferences.getString("artist", "");
-            boolean shuffle = sharedPreferences.getBoolean("shuffle", false);
-            boolean repeat = sharedPreferences.getBoolean("repeat", false);
-            playlistViewModel.setState(Playlist.STATE_PAUSE);
-            playlistViewModel.setQueue(source, albumName, artist);
-            playlistViewModel.setCurDuration(curDuration);
-            playlistViewModel.setCurPos(curSong);
-            playlistViewModel.setRepeat(repeat);
-            playlistViewModel.setShuffle(shuffle);
+    public void loadAppState() {
+        SharedPreferences sharedPreferences = this.getSharedPreferences("MusicPlayerSetting", Context.MODE_PRIVATE);
+
+        if (sharedPreferences != null) {
+            sortOrder = sharedPreferences.getInt("sortOrder", Library.SORT_NONE);
+            curDuration = sharedPreferences.getInt("currentDuration", -1);
+            curSong = sharedPreferences.getString("curSong", "");
+            source = sharedPreferences.getInt("source", -1);
+            albumName = sharedPreferences.getString("albumName", "");
+            artist = sharedPreferences.getString("artist", "");
+            shuffle = sharedPreferences.getBoolean("shuffle", false);
+            repeat = sharedPreferences.getBoolean("repeat", false);
         } else {
-            Toast.makeText(this,"Use the default game setting",Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Use the default game setting", Toast.LENGTH_LONG).show();
         }
+    }
+
+    public void setRestoredState() {
+        playlistViewModel.setState(Playlist.STATE_PAUSE);
+        playlistViewModel.setQueue(source, albumName, artist);
+        playlistViewModel.setCurDuration(curDuration);
+        playlistViewModel.setCurSong(curSong);
+        playlistViewModel.setRepeat(repeat);
+        playlistViewModel.setShuffle(shuffle);
     }
 }

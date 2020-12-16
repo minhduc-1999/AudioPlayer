@@ -7,26 +7,26 @@ public class Song {
     private String album;
     private String duration;
     private String id;
-    private String year;
+    private String date;
 
-    public Song(String path, String title, String artist, String album, String duration,String year, String id) {
+    public Song(String path, String title, String artist, String album, String duration,String date, String id) {
         this.path = path;
         this.title = title;
         this.artist = artist;
         this.album = album;
         this.duration = duration;
         this.id = id;
-        this.year = year;
+        this.date = date;
     }
 
     public Song() {
     }
-    public String getYear() {
-        return year;
+    public String getDate() {
+        return date;
     }
 
-    public void setYear(String year) {
-        this.year = year;
+    public void setDate(String year) {
+        this.date = year;
     }
 
     public String getPath() {

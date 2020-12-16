@@ -33,16 +33,22 @@ public class LibraryViewModel extends BaseViewModel {
         return albums;
     }
 
-    public void loadLocalSong()
+    public void loadLocalSong(int order)
     {
-        library.loadAllSong(getApplication().getApplicationContext());
-        songs.postValue(library.getAllSongs());
-        albums.postValue(library.getAlbums());
+        library.loadAllSong(getApplication().getApplicationContext(), order);
+        //songs.postValue(library.getAllSongs());
+        //albums.postValue(library.getAlbums());
     }
 
     public Album getAlbumByName(String name, String artist)
     {
         return library.getAlbum(name, artist);
     }
-
+    public void sortLibrary(int order)
+    {
+        if(library.sortSongs(order))
+        {
+            songs.postValue(library.getAllSongs());
+        }
+    }
 }

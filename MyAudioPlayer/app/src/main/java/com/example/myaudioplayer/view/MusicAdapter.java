@@ -68,46 +68,24 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.SongViewHold
                     mContext.startActivity(intent);
                 }
             });
-            holder.menu_more.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(final View v) {
-                    PopupMenu popupMenu = new PopupMenu(mContext, v);
-                    popupMenu.getMenuInflater().inflate(R.menu.popup, popupMenu.getMenu());
-                    popupMenu.show();
-                    popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                        @Override
-                        public boolean onMenuItemClick(MenuItem item) {
-                            switch (item.getItemId()) {
-                                case R.id.delete:
-                                    Toast.makeText(mContext, "Delete Clicked!", Toast.LENGTH_SHORT).show();
-                                    deleteFile(position, v);
-                                    break;
-                            }
-                            return true;
-                        }
-                    });
-                }
-            });
         }
     }
 
-    private void deleteFile(int position, View v) {
-        Uri contentUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, Long.parseLong(mFiles.get(position).getId()));
-        File file = new File(mFiles.get(position).getPath());
-        boolean deleted = file.delete();
-        if (deleted) {
-            mContext.getContentResolver().delete(contentUri, null, null);
-            mFiles.remove(position);
-            notifyItemRemoved(position);
-            notifyItemRangeChanged(position, mFiles.size());
-            Snackbar.make(v, "Song Deleted", Snackbar.LENGTH_LONG).show();
-        }
-        else {
-            Snackbar.make(v, "Can't delete this song", Snackbar.LENGTH_LONG).show();
-        }
-
-
-    }
+//    private void deleteFile(int position, View v) {
+//        Uri contentUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, Long.parseLong(mFiles.get(position).getId()));
+//        File file = new File(mFiles.get(position).getPath());
+//        boolean deleted = file.delete();
+//        if (deleted) {
+//            mContext.getContentResolver().delete(contentUri, null, null);
+//            mFiles.remove(position);
+//            notifyItemRemoved(position);
+//            notifyItemRangeChanged(position, mFiles.size());
+//            Snackbar.make(v, "Song Deleted", Snackbar.LENGTH_LONG).show();
+//        }
+//        else {
+//            Snackbar.make(v, "Can't delete this song", Snackbar.LENGTH_LONG).show();
+//        }
+//    }
 
     @Override
     public int getItemCount() {
@@ -118,12 +96,11 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.SongViewHold
     public static class SongViewHolder extends RecyclerView.ViewHolder{
         TextView file_name;
         TextView artist_name;
-        ImageView album_art, menu_more;
+        ImageView album_art;
         public SongViewHolder(@NonNull View itemView) {
             super(itemView);
             file_name = itemView.findViewById(R.id.music_file_name);
             album_art = itemView.findViewById(R.id.music_img);
-            menu_more = itemView.findViewById(R.id.menu_more);
             artist_name = itemView.findViewById(R.id.music_artist_name);
         }
     }

@@ -16,9 +16,9 @@ public class PlaylistViewModel extends BaseViewModel {
         setState(playlist.getState());
         setShuffle(playlist.isShuffle());
         setRepeat(playlist.isRepeat());
-        Song currSong = playlist.getCurSong();
+        Song currSong = playlist.getNowSong();
         if (currSong != null)
-            this.curSong.postValue(playlist.getCurSong());
+            this.curSong.postValue(playlist.getNowSong());
     }
 
     private Playlist playlist = Playlist.getInstance();
@@ -75,8 +75,9 @@ public class PlaylistViewModel extends BaseViewModel {
 
     public Song play(int index) {
         playlist.setState(Playlist.STATE_PLAY);
-        playlist.setCurPos(index);
-        return playlist.getCurSong();
+        if(playlist.setNowSong(index))
+            return playlist.getNowSong();
+        return null;
     }
 
     public void setQueue(int source, String name, String artist) {
@@ -115,14 +116,14 @@ public class PlaylistViewModel extends BaseViewModel {
         playlist.setCurDuration(cur);
     }
 
-    public void setCurPos(String path) {
-        int res = playlist.setCurPos(path);
-        if (res != -1)
-            curSong.postValue(playlist.getCurSong());
+    public void setCurSong(String path) {
+        boolean res = playlist.setNowSong(path);
+        if (res)
+            curSong.postValue(playlist.getNowSong());
     }
 
     public Song getCurrentSong()
     {
-        return playlist.getCurSong();
+        return playlist.getNowSong();
     }
 }

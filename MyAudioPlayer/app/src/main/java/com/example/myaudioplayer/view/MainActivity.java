@@ -22,6 +22,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.SearchView;
@@ -42,6 +43,7 @@ import androidx.viewpager.widget.ViewPager;
 
 import com.bumptech.glide.Glide;
 import com.example.myaudioplayer.R;
+import com.example.myaudioplayer.audiomodel.Library;
 import com.example.myaudioplayer.audiomodel.Playlist;
 import com.example.myaudioplayer.audiomodel.Song;
 import com.example.myaudioplayer.audioservice.AudioService;
@@ -53,6 +55,7 @@ import com.google.android.material.tabs.TabLayout;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.ListIterator;
 
 import static com.example.myaudioplayer.audioservice.AudioService.BRC_SERVICE_FILTER;
 
@@ -63,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private LibraryViewModel libraryViewModel;
     private PlaylistViewModel playlistViewModel;
 
+    private int sortOrder;
     //public static final int REQUEST_CODE = 1;
 
     private RelativeLayout nowPlayingBar;
@@ -75,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
     //Action bar view
     SearchView searchView;
+    ImageView btn_option;
     //
     private boolean isBound = false;
 
@@ -96,10 +101,19 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        this.getSupportActionBar().setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
-        getSupportActionBar().setDisplayShowCustomEnabled(true);
-        getSupportActionBar().setCustomView(R.layout.custom_action_bar);
-        getSupportActionBar().setElevation(0);
+        androidx.appcompat.app.ActionBar actionbar = this.getSupportActionBar();
+
+        actionbar.setDisplayHomeAsUpEnabled(false);
+        actionbar.setDisplayShowHomeEnabled(false);
+        actionbar.setDisplayShowTitleEnabled(false);
+        actionbar.setDisplayUseLogoEnabled(false);
+        actionbar.setHomeButtonEnabled(false);
+        actionbar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
+        actionbar.setDisplayShowCustomEnabled(true);
+        actionbar.setCustomView(R.layout.custom_action_bar);
+        actionbar.setElevation(0);
+
+        sortOrder = getIntent().getIntExtra("sortOrder", Library.SORT_NONE);
 
         libraryViewModel = ViewModelProviders.of(this).get(LibraryViewModel.class);
         playlistViewModel = ViewModelProviders.of(this).get(PlaylistViewModel.class);
@@ -233,33 +247,30 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                                 default:
                                     break;
                             }
-                        }
-                        else
-                            if(action.equals(NotificationReceiver.BRC_NOTIFY_FILTER))
-                            {
-                                String job = intent.getStringExtra("job");
-                                switch (job) {
-                                    case NotificationReceiver.BRC_NOTIFY_NEXT:
-                                        try {
-                                            audioService.changeAudio(playlistViewModel.nextSong());
-                                        } catch (IOException e) {
-                                            e.printStackTrace();
-                                        }
-                                        break;
-                                    case NotificationReceiver.BRC_NOTIFY_PRE:
-                                        try {
-                                            audioService.changeAudio(playlistViewModel.preSong());
-                                        } catch (IOException e) {
-                                            e.printStackTrace();
-                                        }
-                                        break;
-                                    case NotificationReceiver.BRC_NOTIFY_PLAY:
-                                        audioService.playPauseAudio();
-                                        break;
-                                    default:
-                                        break;
-                                }
+                        } else if (action.equals(NotificationReceiver.BRC_NOTIFY_FILTER)) {
+                            String job = intent.getStringExtra("job");
+                            switch (job) {
+                                case NotificationReceiver.BRC_NOTIFY_NEXT:
+                                    try {
+                                        audioService.changeAudio(playlistViewModel.nextSong());
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                    break;
+                                case NotificationReceiver.BRC_NOTIFY_PRE:
+                                    try {
+                                        audioService.changeAudio(playlistViewModel.preSong());
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                    break;
+                                case NotificationReceiver.BRC_NOTIFY_PLAY:
+                                    audioService.playPauseAudio();
+                                    break;
+                                default:
+                                    break;
                             }
+                        }
                     }
                 };
                 workerThread.start();
@@ -283,6 +294,39 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         //init action bar view
         searchView = getSupportActionBar().getCustomView().findViewById(R.id.search_bar);
         searchView.setOnQueryTextListener(this);
+        btn_option = getSupportActionBar().getCustomView().findViewById(R.id.btn_option);
+        btn_option.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                PopupMenu popupMenu = new PopupMenu(MainActivity.this, v);
+                popupMenu.getMenuInflater().inflate(R.menu.action_bar_option, popupMenu.getMenu());
+                popupMenu.show();
+                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        switch (item.getItemId()) {
+                            case R.id.by_date:
+                                if (sortOrder != Library.SORT_BY_DATE) {
+                                    sortOrder = Library.SORT_BY_DATE;
+                                    libraryViewModel.sortLibrary(sortOrder);
+                                } else
+                                    Toast.makeText(MainActivity.this, "Library've been sorted by date", Toast.LENGTH_SHORT).show();
+                                break;
+                            case R.id.by_name:
+                                if (sortOrder != Library.SORT_BY_NAME) {
+                                    sortOrder = Library.SORT_BY_NAME;
+                                    libraryViewModel.sortLibrary(sortOrder);
+                                } else
+                                    Toast.makeText(MainActivity.this, "Library've been sorted by name", Toast.LENGTH_SHORT).show();
+                                break;
+                        }
+                        return true;
+                    }
+                });
+            }
+        });
+        //
+
     }
 
     private void initEventListener() {
@@ -500,6 +544,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         editor.putInt("currentDuration", audioService.getCurrentDuration());
         editor.putString("curSong", audioService.getCurSong().getPath());
         editor.putInt("source", playlistViewModel.getCurrentSource());
+        editor.putInt("sortOrder", sortOrder);
         String albumName;
         String artist;
         albumName = playlistViewModel.getCurrentAlbumQueue();

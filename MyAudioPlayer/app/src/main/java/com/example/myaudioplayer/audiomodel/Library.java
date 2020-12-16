@@ -3,12 +3,16 @@ package com.example.myaudioplayer.audiomodel;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.provider.MediaStore;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 
 public class Library {
-
+    public static final int SORT_BY_NAME = 4000;
+    public static final int SORT_BY_DATE = 5000;
+    public static final int SORT_NONE = 3000;
     private static final Library _instance = new Library();
     public static Library getInstance()
     {
@@ -57,8 +61,21 @@ public class Library {
         return null;
     }
 
-    public void loadAllSong(Context context) {
+    public void loadAllSong(Context context, int sortOrder) {
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+        String order;
+        switch (sortOrder)
+        {
+            case SORT_BY_NAME:
+                order = MediaStore.MediaColumns.TITLE + " ASC";
+                break;
+            case SORT_BY_DATE:
+                order = MediaStore.MediaColumns.DATE_ADDED + " ASC";
+                break;
+            default:
+                order = null;
+                break;
+        }
         String[] projection = {
                 MediaStore.Audio.Media.ALBUM,
                 MediaStore.Audio.Media.TITLE,
@@ -66,9 +83,9 @@ public class Library {
                 MediaStore.Audio.Media.DATA,
                 MediaStore.Audio.Media.ARTIST,
                 MediaStore.Audio.Media._ID,
-                MediaStore.Audio.Media.YEAR
+                MediaStore.Audio.Media.DATE_ADDED
         };
-        Cursor cursor = context.getContentResolver().query(uri, projection, null, null, null);
+        Cursor cursor = context.getContentResolver().query(uri, projection, null, null, order);
 
         if (cursor != null && cursor.moveToFirst()) {
             do {
@@ -78,13 +95,13 @@ public class Library {
                 String path = cursor.getString(3);
                 String artist = cursor.getString(4);
                 String id = cursor.getString(5);
-                String year = cursor.getString(6);
+                String date = cursor.getString(6);
 
-                Song song = new Song(path, title, artist, albumName, duration,year, id);
+                Song song = new Song(path, title, artist, albumName, duration,  date, id);
                 allSongs.add(song);
                 Album album = getAlbum(albumName, artist);
                 if (album == null) {
-                    album = new Album(albumName , year, artist);
+                    album = new Album(albumName , date, artist);
                     album.getSongs().add(song);
                     albums.add(album);
                 }
@@ -95,5 +112,41 @@ public class Library {
             } while (cursor.moveToNext());
             cursor.close();
         }
+    }
+
+    public boolean sortSongs(int order)
+    {
+        switch (order)
+        {
+            case SORT_BY_DATE:
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    allSongs.sort(new Comparator<Song>() {
+                        @Override
+                        public int compare(Song o1, Song o2) {
+                            int s1 = Integer.parseInt(o1.getDate());
+                            int s2 = Integer.parseInt(o2.getDate());
+                            if(s1 > s2)
+                                return 1;
+                            if(s1 < s2)
+                                return -1;
+                            return 0;
+                        }
+                    });
+                }
+                break;
+            case SORT_BY_NAME:
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    allSongs.sort(new Comparator<Song>() {
+                        @Override
+                        public int compare(Song o1, Song o2) {
+                            return o1.getTitle().compareTo(o2.getTitle());
+                        }
+                    });
+                }
+                break;
+            default:
+                return false;
+        }
+        return true;
     }
 }

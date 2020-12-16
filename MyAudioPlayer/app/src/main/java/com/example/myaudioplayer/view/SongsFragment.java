@@ -38,8 +38,6 @@ public class SongsFragment extends Fragment {
         recyclerView.setAdapter(musicAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
         recyclerView.setHasFixedSize(true);
-
-
         return view;
     }
 
