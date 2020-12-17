@@ -25,18 +25,18 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.bumptech.glide.Glide;
 
+import com.bumptech.glide.request.RequestOptions;
 import com.example.myaudioplayer.R;
 import com.example.myaudioplayer.audiomodel.Playlist;
 import com.example.myaudioplayer.audiomodel.Song;
 import com.example.myaudioplayer.audioservice.AudioService;
+import com.example.myaudioplayer.helper.BlurTransformation;
+import com.example.myaudioplayer.helper.GrayScaleTransformation;
 import com.example.myaudioplayer.viewmodel.PlaylistViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
 
-import static com.example.myaudioplayer.audioservice.AudioService.NEXTBUTTON;
-import static com.example.myaudioplayer.audioservice.AudioService.PLAYBUTTON;
-import static com.example.myaudioplayer.audioservice.AudioService.PREBUTTON;
 
 public class PlayerActivity extends AppCompatActivity {
     private PlaylistViewModel playlistViewModel;
@@ -49,7 +49,7 @@ public class PlayerActivity extends AppCompatActivity {
     ImageView cover_art, nextBtn, preBtn, backBtn, shuffleBtn, repeatBtn;
     FloatingActionButton playPauseBtn;
     SeekBar seekBar;
-
+    //
     private int source;
     private int position;
     private String action;
@@ -367,6 +367,16 @@ public class PlayerActivity extends AppCompatActivity {
         repeatBtn = findViewById(R.id.id_repeat);
         playPauseBtn = findViewById(R.id.play_pause);
         seekBar = findViewById(R.id.seekBar);
+
+        //background
+//        ImageView art_bg = findViewById(R.id.art_background);
+//        MultiTransformation<Bitmap> multi = new MultiTransformation<Bitmap>(
+//                new GrayScaleTransformation()
+//        );
+//        ImageView blur_bg = findViewById(R.id.blur_bg);
+//        Glide.with(this).load(R.drawable.background).into(art_bg);
+//        Glide.with(this).load(R.drawable.blur_bg).apply(RequestOptions.bitmapTransform(new BlurTransformation(50))).into(blur_bg);
+        //
     }
 
     public static void ImageAnimation(final Context context, final ImageView imageView, final Bitmap bitmap) {

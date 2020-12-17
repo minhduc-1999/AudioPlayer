@@ -7,4 +7,5 @@
     <color name="progress_bg">#85817F</color>
     <color name="color_none_select">#74B1AFAF</color>
     <color name="color_select">#FFFFFF</color>
+    <color name="color_blur_bg">#33151520</color>
 </resources>
