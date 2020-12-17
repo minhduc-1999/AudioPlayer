@@ -142,10 +142,10 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
             try {
                 return mediaPlayer.getCurrentPosition() / 1000;
             } catch (IllegalStateException e) {
-                return -1;
+                return 0;
             }
 
-        return -1;
+        return 0;
     }
 
     private void setState(int state) {

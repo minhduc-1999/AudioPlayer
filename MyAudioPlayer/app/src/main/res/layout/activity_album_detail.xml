@@ -12,6 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="300dp"
         android:scaleType="centerCrop"
+        android:alpha="0.4"
         android:src="@drawable/music_default"/>
     <RelativeLayout
         android:layout_width="wrap_content"
@@ -22,7 +23,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:textColor="@color/colorAccent"
+            android:textColor="@color/color_select"
             android:gravity="center"
             android:textSize="30dp"
             android:id="@+id/album_name"/>
@@ -35,22 +36,22 @@
             android:layout_marginTop="3dp"
             android:textSize="15dp"
             android:layout_centerVertical="true"
-            android:textColor="@color/colorAccent"
+            android:textColor="@color/color_none_select"
             android:id="@+id/album_artist"/>
     </RelativeLayout>
-    <ImageView
-        android:id="@+id/gradient"
-        android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:src="@drawable/gradient_bg" />
+<!--    <ImageView-->
+<!--        android:id="@+id/gradient"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="300dp"-->
+<!--        android:src="@drawable/gradient_bg" />-->
     <ImageView
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:id="@+id/back_btn"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:layout_marginTop="10dp"
-        android:layout_marginRight="10dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginRight="20dp"
         android:src="@drawable/ic_round_chevron_left_24"/>
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"

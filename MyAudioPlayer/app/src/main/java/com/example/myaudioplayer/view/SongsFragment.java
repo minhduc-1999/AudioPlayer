@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.example.myaudioplayer.R;
 import com.example.myaudioplayer.audiomodel.Song;
@@ -23,7 +24,7 @@ public class SongsFragment extends Fragment {
     RecyclerView recyclerView;
     static MusicAdapter musicAdapter;
     private LibraryViewModel libraryViewModel;
-
+    TextView text_list;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -38,6 +39,8 @@ public class SongsFragment extends Fragment {
         recyclerView.setAdapter(musicAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
         recyclerView.setHasFixedSize(true);
+
+        text_list = view.findViewById(R.id.text_list);
         return view;
     }
 
@@ -46,7 +49,13 @@ public class SongsFragment extends Fragment {
             @Override
             public void onChanged(ArrayList<Song> songs) {
                 musicAdapter.updateList(songs);
+                setTextSongNum(musicAdapter.getItemCount());
             }
         });
+    }
+
+    public void setTextSongNum(int sl)
+    {
+        text_list.setText("Playlist (" + sl +")");
     }
 }

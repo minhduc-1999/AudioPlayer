@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
@@ -21,7 +22,7 @@ public class AlbumFragment extends Fragment {
     RecyclerView recyclerView;
     AlbumAdapter albumAdapter;
     private LibraryViewModel libraryViewModel;
-
+    TextView text_albumNum;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -37,6 +38,7 @@ public class AlbumFragment extends Fragment {
         recyclerView.setAdapter(albumAdapter);
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
 
+        text_albumNum = view.findViewById(R.id.text_album_num);
         return view;
     }
 
@@ -45,7 +47,12 @@ public class AlbumFragment extends Fragment {
             @Override
             public void onChanged(ArrayList<Album> albums) {
                 albumAdapter.updateList(albums);
+                setTextAlbumNum(albumAdapter.getItemCount());
             }
         });
+    }
+    public void setTextAlbumNum(int sl)
+    {
+        text_albumNum.setText("Album (" + sl +")");
     }
 }

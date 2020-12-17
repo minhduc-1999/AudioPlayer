@@ -6,21 +6,17 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
-import android.graphics.Bitmap;
 import android.media.MediaMetadataRetriever;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.MultiTransformation;
-import com.bumptech.glide.request.RequestOptions;
 import com.example.myaudioplayer.R;
 import com.example.myaudioplayer.audiomodel.Album;
-import com.example.myaudioplayer.helper.BlurTransformation;
-import com.example.myaudioplayer.helper.CropCircleTranformation;
 import com.example.myaudioplayer.viewmodel.LibraryViewModel;
+
+import static com.example.myaudioplayer.helper.AnimationHelper.ImageAnimation;
 
 public class AlbumDetailActivity extends AppCompatActivity {
     private LibraryViewModel libraryViewModel;
@@ -56,13 +52,12 @@ public class AlbumDetailActivity extends AppCompatActivity {
         album = libraryViewModel.getAlbumByName(albumName, artist);
 
         byte[] image = getAlbumArt(album.getSongs().get(0).getPath());
-        MultiTransformation<Bitmap> multi = new MultiTransformation<Bitmap>(
-                new BlurTransformation(5)
-        );
         if (image != null) {
-            Glide.with(this).load(image).apply(RequestOptions.bitmapTransform(multi)).into(albumPhoto);
+            ImageAnimation(this, albumPhoto, image, false);
+            //Glide.with(this).load(image).into(albumPhoto);
         } else {
-            Glide.with(this).load(R.drawable.music_default).into(albumPhoto);
+            ImageAnimation(this, albumPhoto, R.drawable.background, false);
+            //Glide.with(this).load(R.drawable.background).into(albumPhoto);
         }
         btn_back.setOnClickListener(new View.OnClickListener() {
             @Override

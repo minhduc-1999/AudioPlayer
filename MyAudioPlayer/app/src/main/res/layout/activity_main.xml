@@ -8,130 +8,134 @@
     tools:context=".view.MainActivity">
 
     <androidx.viewpager.widget.ViewPager
+        android:id="@+id/viewpager"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
         android:layout_above="@+id/now_playing_collapse"
-        android:id="@+id/viewpager"/>
+        android:layout_alignParentTop="true" />
 
     <RelativeLayout
+        android:id="@+id/now_playing_collapse"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/now_playing_collapse"
+        android:layout_above="@id/divider"
         android:background="@color/colorPrimary"
-        android:visibility="gone"
-        android:layout_above="@id/divider">
+        android:translationZ="5dp"
+        android:visibility="gone">
+
         <ProgressBar
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
             android:id="@+id/seekBar"
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
-            android:paddingStart="0dp"
-            android:paddingEnd="0dp"
             android:layout_marginTop="-6dp"
             android:layout_marginBottom="-7dp"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
             android:progress="50"
             android:progressBackgroundTint="@color/progress_bg"
-            android:progressTint="@color/progress"/>
+            android:progressTint="@color/progress" />
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/seekBar">
-            <androidx.cardview.widget.CardView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <ImageView
+                android:id="@+id/cover_art"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_alignParentLeft="true"
                 android:layout_centerVertical="true"
                 android:layout_marginLeft="8dp"
-                android:id="@+id/cover_art_card"
-                app:cardCornerRadius="25dp">
-                <ImageView
-                    android:layout_width="35dp"
-                    android:layout_height="35dp"
-                    android:layout_centerVertical="true"
-                    android:layout_alignParentLeft="true"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/music_default"
-                    android:id="@+id/cover_art"/>
-            </androidx.cardview.widget.CardView>
+                android:scaleType="centerCrop"/>
+
             <RelativeLayout
+                android:id="@+id/song_ino"
                 android:layout_width="wrap_content"
-                android:layout_centerVertical="true"
                 android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
                 android:layout_marginLeft="8dp"
                 android:layout_toLeftOf="@id/control"
-                android:layout_toRightOf="@+id/cover_art_card"
-                android:id="@+id/song_ino">
+                android:layout_toRightOf="@+id/cover_art">
+
                 <TextView
                     android:id="@+id/song_name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Song name"
                     android:textColor="@android:color/primary_text_dark"
-                    android:textSize="16dp"/>
+                    android:textSize="16dp" />
+
                 <TextView
                     android:id="@+id/song_artist"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/song_name"
                     android:text="Artist"
-                    android:textSize="12dp"
-                    android:textColor="@android:color/secondary_text_dark"/>
+                    android:textColor="@android:color/secondary_text_dark"
+                    android:textSize="12dp" />
             </RelativeLayout>
+
             <RelativeLayout
-                android:layout_width="130dp"
-                android:layout_margin="5dp"
                 android:id="@+id/control"
-                android:layout_height="40dp"
-                android:layout_alignParentRight="true">
+                android:layout_width="130dp"
+                android:layout_height="50dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:layout_margin="5dp">
+
                 <ImageView
                     android:id="@+id/id_pre"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_toLeftOf="@id/play_pause"
-                    android:layout_marginRight="10dp"
-                    android:src="@drawable/ic_round_skip_previous_24" />
-                <ImageView
-                    android:id="@+id/play_pause"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
+                    android:layout_centerVertical="true"
+                    android:layout_marginRight="10dp"
+                    android:layout_toLeftOf="@id/play_pause"
+                    android:src="@drawable/ic_round_skip_previous_24" />
+
+                <ImageView
+                    android:id="@+id/play_pause"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
                     android:layout_centerHorizontal="true"
                     android:layout_centerVertical="true"
                     android:backgroundTint="@color/colorPrimary"
                     android:src="@drawable/ic_round_play_arrow_24"
                     app:borderWidth="2dp" />
+
                 <ImageView
                     android:id="@+id/id_next"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="10dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:layout_centerVertical="true"
+                    android:layout_marginLeft="10dp"
                     android:layout_toRightOf="@id/play_pause"
-                    android:src="@drawable/ic_round_skip_next_24"/>
+                    android:src="@drawable/ic_round_skip_next_24" />
             </RelativeLayout>
         </RelativeLayout>
     </RelativeLayout>
+
     <View
+        android:id="@+id/divider"
         android:layout_width="match_parent"
         android:layout_height="0.5dp"
-        android:id="@+id/divider"
-        android:background="#848783"
-        android:layout_above="@+id/tab_layout"/>
+        android:layout_above="@+id/tab_layout"
+        android:background="#848783" />
+
     <com.google.android.material.tabs.TabLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
         android:id="@+id/tab_layout"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
         android:layout_alignParentBottom="true"
-        app:tabSelectedTextColor="@color/progress"
-        app:tabIndicatorHeight="0dp"
-        app:tabTextAppearance="@style/MyCustomTabTextAppearance"
-        android:layout_marginBottom="-5dp"
-        android:layout_marginTop="-8dp"
+        android:layout_marginTop="0dp"
+        android:background="@color/colorPrimary"
         android:translationZ="-4dp"
-        android:background="@color/colorPrimary"/>
-    <!--app:tabIndicatorFullWidth="true"
-    app:tabIndicatorGravity="center"
-    app:tabIndicator="@drawable/tab_indicator"
-    app:tabIndicatorColor="#009688"-->
+        app:tabIndicatorColor="@color/progress"
+        app:tabIndicatorFullWidth="true"
+        app:tabIndicatorGravity="top"
+        app:tabIndicatorHeight="3dp"
+        app:tabSelectedTextColor="@color/progress"
+        app:tabTextAppearance="@style/MyCustomTabTextAppearance" />
+
 </RelativeLayout>

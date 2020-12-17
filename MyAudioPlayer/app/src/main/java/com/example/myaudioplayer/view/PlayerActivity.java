@@ -4,15 +4,11 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.media.MediaMetadataRetriever;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -23,19 +19,16 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
-import com.bumptech.glide.Glide;
-
-import com.bumptech.glide.request.RequestOptions;
 import com.example.myaudioplayer.R;
 import com.example.myaudioplayer.audiomodel.Playlist;
 import com.example.myaudioplayer.audiomodel.Song;
 import com.example.myaudioplayer.audioservice.AudioService;
-import com.example.myaudioplayer.helper.BlurTransformation;
-import com.example.myaudioplayer.helper.GrayScaleTransformation;
 import com.example.myaudioplayer.viewmodel.PlaylistViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.IOException;
+
+import static com.example.myaudioplayer.helper.AnimationHelper.ImageAnimation;
 
 
 public class PlayerActivity extends AppCompatActivity {
@@ -46,7 +39,7 @@ public class PlayerActivity extends AppCompatActivity {
 
     //Views
     TextView song_name, artist_name, duration_played, duration_total;
-    ImageView cover_art, nextBtn, preBtn, backBtn, shuffleBtn, repeatBtn;
+    ImageView cover_art, nextBtn, preBtn, backBtn, shuffleBtn, repeatBtn, art_background;
     FloatingActionButton playPauseBtn;
     SeekBar seekBar;
     //
@@ -161,17 +154,14 @@ public class PlayerActivity extends AppCompatActivity {
                     isBound = true;
                     if (action.equals(MainActivity.PLAY_NEW_SONG)) {
                         Song temp = playlistViewModel.play(position);
-                        if(temp != null)
-                        {
+                        if (temp != null) {
                             try {
                                 audioService.changeAudio(temp);
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
                         }
-                    }
-                    else
-                    {
+                    } else {
                         setMetaData(audioService.getCurSong());
                     }
                 } else {
@@ -341,9 +331,7 @@ public class PlayerActivity extends AppCompatActivity {
             String albumName = bundle.getString("albumName", "");
             String artist = bundle.getString("artist", "");
             playlistViewModel.setQueue(source, albumName, artist);
-        }
-        else
-        {
+        } else {
             Bundle bundle = getIntent().getExtras();
             int totalDuration = bundle.getInt("totalDuration", 300);
             seekBar.setMax(totalDuration);
@@ -369,67 +357,20 @@ public class PlayerActivity extends AppCompatActivity {
         seekBar = findViewById(R.id.seekBar);
 
         //background
-//        ImageView art_bg = findViewById(R.id.art_background);
-//        MultiTransformation<Bitmap> multi = new MultiTransformation<Bitmap>(
-//                new GrayScaleTransformation()
-//        );
-//        ImageView blur_bg = findViewById(R.id.blur_bg);
-//        Glide.with(this).load(R.drawable.background).into(art_bg);
-//        Glide.with(this).load(R.drawable.blur_bg).apply(RequestOptions.bitmapTransform(new BlurTransformation(50))).into(blur_bg);
+        art_background = findViewById(R.id.art_background);
         //
     }
 
-    public static void ImageAnimation(final Context context, final ImageView imageView, final Bitmap bitmap) {
-        Animation animOut = AnimationUtils.loadAnimation(context, android.R.anim.fade_out);
-        final Animation animIn = AnimationUtils.loadAnimation(context, android.R.anim.fade_in);
-        animOut.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                Glide.with(context).load(bitmap).into(imageView);
-                animIn.setAnimationListener(new Animation.AnimationListener() {
-                    @Override
-                    public void onAnimationStart(Animation animation) {
-
-                    }
-
-                    @Override
-                    public void onAnimationEnd(Animation animation) {
-
-                    }
-
-                    @Override
-                    public void onAnimationRepeat(Animation animation) {
-
-                    }
-                });
-                imageView.startAnimation(animIn);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-
-            }
-        });
-        imageView.startAnimation(animOut);
-    }
 
     private void setMetaData(Song musicFiles) {
         int durationTotal = Integer.parseInt(musicFiles.getDuration()) / 1000;
         duration_total.setText(formattedTime(durationTotal));
         seekBar.setMax(durationTotal);
-        if(audioService != null)
-        {
+        if (audioService != null) {
             int curDuration = audioService.getCurrentDuration();
             seekBar.setProgress(curDuration);
             duration_played.setText(formattedTime(curDuration));
-        }
-        else
-        {
+        } else {
             duration_played.setText(formattedTime(0));
         }
 
@@ -440,73 +381,17 @@ public class PlayerActivity extends AppCompatActivity {
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         retriever.setDataSource(musicFiles.getPath());
         byte[] art = retriever.getEmbeddedPicture();
-        Bitmap bitmap;
+        //Bitmap bitmap;
         if (art != null) {
-            bitmap = BitmapFactory.decodeByteArray(art, 0, art.length);
-            ImageAnimation(this, cover_art, bitmap);
+            //bitmap = BitmapFactory.decodeByteArray(art, 0, art.length);
+            //Glide.with(this).load(bitmap).apply(RequestOptions.bitmapTransform(new CropCircleTranformation())).into(cover_art);
+            ImageAnimation(this, cover_art, art, true);
+            ImageAnimation(this, art_background, art, false);
         } else {
-            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.music_default);
-            ImageAnimation(this, cover_art, bitmap);
+            //bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.background);
+            //Glide.with(this).load(bitmap).apply(RequestOptions.bitmapTransform(new CropCircleTranformation())).into(cover_art);
+            ImageAnimation(this, cover_art,  R.drawable.background, true);
+            ImageAnimation(this, art_background,  R.drawable.background, false);
         }
     }
-
-
-    /*private void metaData(Uri uri) {
-        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        retriever.setDataSource(uri.toString());
-        int durationTotal = Integer.parseInt(listSong.get(position).getDuration()) / 1000;
-        duration_total.setText(formattedTime(durationTotal));
-        song_name.setText(listSong.get(position).getTitle());
-        artist_name.setText(listSong.get(position).getArtist());
-        seekBar.setMax(mediaPlayer.getDuration() / 1000);
-        byte[] art = retriever.getEmbeddedPicture();
-        Bitmap bitmap;
-        if (art != null) {
-            bitmap = BitmapFactory.decodeByteArray(art, 0, art.length);
-            ImageAnimation(this, cover_art, bitmap);
-            *//*Palette.from(bitmap).generate(new Palette.PaletteAsyncListener() {
-                @Override
-                public void onGenerated(@Nullable Palette palette) {
-                    Palette.Swatch swatch = palette.getDominantSwatch();
-                    if (swatch != null) {
-                        ImageView gredient = findViewById(R.id.imageViewGradient);
-                        RelativeLayout mContainer = findViewById(R.id.mContainer);
-                        gredient.setBackgroundResource(R.drawable.gradient_bg);
-                        mContainer.setBackgroundResource(R.drawable.main_bg);
-                        GradientDrawable gradientDrawable = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,
-                                new int[]{swatch.getRgb(), 0x00000000});
-                        gredient.setBackground(gradientDrawable);
-                        GradientDrawable gradientDrawableBg = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,
-                                new int[]{swatch.getRgb(), swatch.getRgb()});
-                        mContainer.setBackground(gradientDrawableBg);
-                        song_name.setTextColor(swatch.getBodyTextColor());
-                        artist_name.setTextColor(swatch.getBodyTextColor());
-                    } else {
-                        ImageView gredient = findViewById(R.id.imageViewGradient);
-                        RelativeLayout mContainer = findViewById(R.id.mContainer);
-                        gredient.setBackgroundResource(R.drawable.gradient_bg);
-                        mContainer.setBackgroundResource(R.drawable.main_bg);
-                        GradientDrawable gradientDrawable = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,
-                                new int[]{0xff000000, 0x00000000});
-                        gredient.setBackground(gradientDrawable);
-                        GradientDrawable gradientDrawableBg = new GradientDrawable(GradientDrawable.Orientation.BOTTOM_TOP,
-                                new int[]{0xff000000, 0xff000000});
-                        mContainer.setBackground(gradientDrawableBg);
-                        song_name.setTextColor(Color.WHITE);
-                        artist_name.setTextColor(Color.DKGRAY);
-                    }
-                }
-            });*//*
-        } else {
-            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.music_default);
-            ImageAnimation(this, cover_art, bitmap);
-            //Glide.with(this).asBitmap().load(R.drawable.music_default).into(cover_art);
-            *//*ImageView gredient = findViewById(R.id.imageViewGradient);
-            RelativeLayout mContainer = findViewById(R.id.mContainer);
-            gredient.setBackgroundResource(R.drawable.gradient_bg);
-            mContainer.setBackgroundResource(R.drawable.main_bg);
-            song_name.setTextColor(Color.WHITE);
-            artist_name.setTextColor(Color.DKGRAY);*//*
-        }
-    }*/
 }

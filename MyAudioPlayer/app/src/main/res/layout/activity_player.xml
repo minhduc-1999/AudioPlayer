@@ -14,13 +14,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:alpha="0.2"
-        android:src="@drawable/background"
         android:scaleType="centerCrop" />
-    <ImageView
-        android:id="@+id/cover_art"
-        android:layout_width="match_parent"
-        android:layout_height="350dp"
-        android:scaleType="centerCrop" />
+
     <ImageView
         android:id="@+id/back_btn"
         android:layout_width="30dp"
@@ -31,7 +26,7 @@
         android:layout_marginTop="20dp"
         android:src="@drawable/ic_round_chevron_left_24" />
     <TextView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
@@ -42,15 +37,24 @@
         android:textColor="@color/colorAccent"
         android:textSize="20dp"
         android:textStyle="bold" />
-    <ImageView
-        android:id="@+id/blur_bg"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@id/cover_art"
-        android:layout_marginTop="-70dp"
-        android:alpha="1"
-        android:layout_alignParentBottom="true"/>
 
+    <ImageView
+        android:id="@+id/cover_art"
+        android:layout_width="300dp"
+        android:layout_marginTop="30dp"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/back_btn"
+        android:layout_height="300dp"
+        android:scaleType="centerCrop" />
+<!--    <ImageView-->
+<!--        android:id="@+id/blur_bg"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:layout_below="@id/cover_art"-->
+<!--        android:layout_marginTop="-50dp"-->
+<!--        android:alpha="0.8"-->
+<!--        android:background="@drawable/gradient_bg"-->
+<!--        android:layout_alignParentBottom="true"/>-->
     <RelativeLayout
         android:id="@+id/card_info"
         android:layout_width="match_parent"
@@ -118,7 +122,7 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
-            android:backgroundTint="#D2FF24FF"
+            android:backgroundTint="@color/progress"
             android:clickable="true"
             android:focusable="true"
             android:src="@drawable/ic_round_play_arrow_24"

@@ -14,6 +14,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.media.MediaMetadataRetriever;
 import android.os.Build;
 import android.os.Bundle;
@@ -55,9 +56,9 @@ import com.google.android.material.tabs.TabLayout;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.ListIterator;
 
 import static com.example.myaudioplayer.audioservice.AudioService.BRC_SERVICE_FILTER;
+import static com.example.myaudioplayer.helper.AnimationHelper.ImageAnimation;
 
 public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
 
@@ -111,7 +112,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         actionbar.setDisplayOptions(ActionBar.DISPLAY_SHOW_CUSTOM);
         actionbar.setDisplayShowCustomEnabled(true);
         actionbar.setCustomView(R.layout.custom_action_bar);
-        actionbar.setElevation(0);
+//        actionbar.setElevation(0);
 
         sortOrder = getIntent().getIntExtra("sortOrder", Library.SORT_NONE);
 
@@ -393,12 +394,15 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         retriever.setDataSource(musicFiles.getPath());
         byte[] art = retriever.getEmbeddedPicture();
+        //Bitmap bitmap;
         if (art != null) {
-            Bitmap bitmap = BitmapFactory.decodeByteArray(art, 0, art.length);
-            Glide.with(MainActivity.this).asBitmap().load(bitmap).into(cover_art);
+            //bitmap = BitmapFactory.decodeByteArray(art, 0, art.length);
+            ImageAnimation(this, cover_art, art, true);
+            //Glide.with(MainActivity.this).asBitmap().load(bitmap).into(cover_art);
         } else {
-            //bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.music_default);
-            Glide.with(MainActivity.this).asBitmap().load(R.drawable.music_default).into(cover_art);
+            //bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.background);
+            ImageAnimation(this, cover_art, R.drawable.background, true);
+            //Glide.with(MainActivity.this).asBitmap().load(R.drawable.music_default).into(cover_art);
         }
 
     }
@@ -463,7 +467,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         @Nullable
         @Override
         public CharSequence getPageTitle(int position) {
-            return titles.get(position);
+            return null;
         }
     }
 
@@ -542,7 +546,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         editor.putBoolean("shuffle", playlistViewModel.getIsShuffle().getValue());
         editor.putBoolean("repeat", playlistViewModel.getIsRepeat().getValue());
         editor.putInt("currentDuration", audioService.getCurrentDuration());
-        editor.putString("curSong", audioService.getCurSong().getPath());
+        if (audioService.getCurSong() != null)
+            editor.putString("curSong", audioService.getCurSong().getPath());
         editor.putInt("source", playlistViewModel.getCurrentSource());
         editor.putInt("sortOrder", sortOrder);
         String albumName;

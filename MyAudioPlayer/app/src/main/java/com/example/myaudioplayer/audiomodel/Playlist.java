@@ -69,12 +69,15 @@ public class Playlist {
 
     public boolean setNowSong(String path)
     {
-        for (Song song: queue)
+        if(!path.equals(""))
         {
-            if(song.getPath().equals(path))
+            for (Song song: queue)
             {
-                nowSong = song;
-                return true;
+                if(song.getPath().equals(path))
+                {
+                    nowSong = song;
+                    return true;
+                }
             }
         }
         nowSong = null;

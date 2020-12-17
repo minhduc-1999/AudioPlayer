@@ -3,7 +3,7 @@
     <color name="colorPrimary">#272429</color>
     <color name="colorPrimaryDark">#0E0E0E</color>
     <color name="colorAccent">#E6DCDC</color>
-    <color name="progress">#02F30B</color>
+    <color name="progress">#e598a2</color>
     <color name="progress_bg">#85817F</color>
     <color name="color_none_select">#74B1AFAF</color>
     <color name="color_select">#FFFFFF</color>

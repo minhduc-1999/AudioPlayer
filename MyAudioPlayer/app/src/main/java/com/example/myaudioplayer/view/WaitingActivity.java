@@ -7,7 +7,9 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProviders;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -21,11 +23,12 @@ import com.example.myaudioplayer.audiomodel.Playlist;
 import com.example.myaudioplayer.viewmodel.LibraryViewModel;
 import com.example.myaudioplayer.viewmodel.PlaylistViewModel;
 
+import static java.lang.Thread.sleep;
+
 public class WaitingActivity extends AppCompatActivity {
     private LibraryViewModel libraryViewModel;
     private PlaylistViewModel playlistViewModel;
     private int sortOrder;
-    private boolean hasPermission;
     private int curDuration;
     private String curSong;
     private int source;
@@ -33,7 +36,10 @@ public class WaitingActivity extends AppCompatActivity {
     private String artist;
     private boolean shuffle;
     private boolean repeat;
+    //permission
     public static final int REQUEST_CODE = 1;
+    private boolean hasPermission;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,15 +48,20 @@ public class WaitingActivity extends AppCompatActivity {
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
+        //hasPermission = false;
+
+        permission();
+//        if (!hasPermission) {
+//            finish();
+//            System.exit(0);
+//        }
+
+    }
+
+    private void doIfHasPermisstion() {
         libraryViewModel = ViewModelProviders.of(this).get(LibraryViewModel.class);
         playlistViewModel = ViewModelProviders.of(this).get(PlaylistViewModel.class);
-
-        hasPermission = false;
-        while (!hasPermission) {
-            permission();
-        }
         Thread welcomeThread = new Thread() {
-
             @Override
             public void run() {
                 try {
@@ -74,10 +85,11 @@ public class WaitingActivity extends AppCompatActivity {
     }
 
     private void permission() {
-        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(WaitingActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
+        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            requestStoragePermission();
         } else {
-            hasPermission = true;
+            //hasPermission = true;
+            doIfHasPermisstion();
         }
     }
 
@@ -85,9 +97,12 @@ public class WaitingActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_CODE) {
-            hasPermission = true;
-        } else {
-            ActivityCompat.requestPermissions(WaitingActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);
+            if (grantResults.length > 0)
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    hasPermission = true;
+                    doIfHasPermisstion();
+                } else
+                    ActivityCompat.requestPermissions(WaitingActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE);
         }
     }
 
@@ -96,20 +111,52 @@ public class WaitingActivity extends AppCompatActivity {
 
         if (sharedPreferences != null) {
             sortOrder = sharedPreferences.getInt("sortOrder", Library.SORT_NONE);
-            curDuration = sharedPreferences.getInt("currentDuration", -1);
+            curDuration = sharedPreferences.getInt("currentDuration", 0);
             curSong = sharedPreferences.getString("curSong", "");
-            source = sharedPreferences.getInt("source", -1);
+            source = sharedPreferences.getInt("source", Playlist.PLAYLIST_SOURCE_SONG);
             albumName = sharedPreferences.getString("albumName", "");
             artist = sharedPreferences.getString("artist", "");
             shuffle = sharedPreferences.getBoolean("shuffle", false);
             repeat = sharedPreferences.getBoolean("repeat", false);
         } else {
-            Toast.makeText(this, "Use the default game setting", Toast.LENGTH_LONG).show();
+            sortOrder = Library.SORT_NONE;
+            curDuration = 0;
+            curSong = "";
+            source = Playlist.PLAYLIST_SOURCE_SONG;
+            albumName = "";
+            artist = "";
+            shuffle = false;
+            repeat = false;
+        }
+    }
+
+    private void requestStoragePermission() {
+        if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_EXTERNAL_STORAGE)) {
+            new AlertDialog.Builder(this)
+                    .setTitle("Permission Needed")
+                    .setMessage("Permission is needed to access music files from your device...")
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            ActivityCompat.requestPermissions(WaitingActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE);
+                        }
+                    })
+                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    }).create().show();
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_CODE);
         }
     }
 
     public void setRestoredState() {
-        playlistViewModel.setState(Playlist.STATE_PAUSE);
+        if (curSong != "")
+            playlistViewModel.setState(Playlist.STATE_PAUSE);
+        else
+            playlistViewModel.setState(Playlist.STATE_NONE);
         playlistViewModel.setQueue(source, albumName, artist);
         playlistViewModel.setCurDuration(curDuration);
         playlistViewModel.setCurSong(curSong);
