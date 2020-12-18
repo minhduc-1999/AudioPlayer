@@ -1,6 +1,5 @@
 package com.example.myaudioplayer.view;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.NotificationChannel;
@@ -10,16 +9,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.media.MediaMetadataRetriever;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -30,19 +24,13 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentPagerAdapter;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.viewpager.widget.ViewPager;
 
-import com.bumptech.glide.Glide;
 import com.example.myaudioplayer.R;
 import com.example.myaudioplayer.audiomodel.Library;
 import com.example.myaudioplayer.audiomodel.Playlist;
@@ -53,7 +41,6 @@ import com.example.myaudioplayer.viewmodel.LibraryViewModel;
 import com.example.myaudioplayer.viewmodel.PlaylistViewModel;
 import com.google.android.material.tabs.TabLayout;
 
-
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -62,14 +49,24 @@ import static com.example.myaudioplayer.helper.AnimationHelper.ImageAnimation;
 
 public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
 
+    //action type
     public static final String PLAY_NEW_SONG = "PLAY_NEW_SONG";
     public static final String OPEN_PLAYING_BAR = "OPEN_PLAYING_BAR";
+    //
+    //Viewmodel
     private LibraryViewModel libraryViewModel;
     private PlaylistViewModel playlistViewModel;
 
-    private int sortOrder;
-    //public static final int REQUEST_CODE = 1;
+    //Tablayout detail
+    public static final int SONG_FRAGMENT = 100;
+    public static final int FAVORITE_FRAGMENT = 200;
+    public static final int ALBUM_FRAGMENT = 300;
+    private int nowFragment;
 
+    //for sorting
+    private int sortOrder;
+
+    //view component
     private RelativeLayout nowPlayingBar;
     private ProgressBar seekBar;
     private ImageView cover_art;
@@ -81,15 +78,20 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     //Action bar view
     SearchView searchView;
     ImageView btn_option;
-    //
-    private boolean isBound = false;
+    ////////////////////////
 
+    //Control bar
     private ImageView pre_btn;
     private ImageView next_btn;
     private ImageView play_pause_btn;
+    //////////////
 
+    //service + broadcast
     private AudioService audioService;
     private BroadcastReceiver broadcastReceiver;
+    private boolean isBound = false;
+    ///////////////
+
 
     private Handler handler = new Handler();
 
@@ -410,20 +412,39 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private void initViewPager() {
         viewPager = findViewById(R.id.viewpager);
         tabLayout = findViewById(R.id.tab_layout);
+        nowFragment = SONG_FRAGMENT;
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
         viewPagerAdapter.addFragments(new SongsFragment(), "Songs");
         viewPagerAdapter.addFragments(new AlbumFragment(), "Albums");
+        viewPagerAdapter.addFragments(new FavoriteFragment(), "Favorite");
         viewPager.setAdapter(viewPagerAdapter);
         tabLayout.setupWithViewPager(viewPager);
 
         tabLayout.getTabAt(0).setIcon(R.drawable.ic_round_music_note_24);
         tabLayout.getTabAt(1).setIcon(R.drawable.ic_round_library_music_24);
+        tabLayout.getTabAt(2).setIcon(R.drawable.ic_round_favorite_24);
+
         //tabLayout.getTabAt(0).setText(viewPagerAdapter.getPageTitle(0));
         //tabLayout.getTabAt(1).setText(viewPagerAdapter.getPageTitle(1));
         tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 tab.getIcon().setColorFilter(getResources().getColor(R.color.progress), PorterDuff.Mode.SRC_IN);
+                int pos = tab.getPosition();
+                switch (pos)
+                {
+                    case 0:
+                        nowFragment = SONG_FRAGMENT;
+                        break;
+                    case 2:
+                        nowFragment = FAVORITE_FRAGMENT;
+                        break;
+                    case 1:
+                        nowFragment = ALBUM_FRAGMENT;
+                        break;
+                    default:
+                        break;
+                }
             }
 
             @Override
@@ -438,38 +459,38 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         });
     }
 
-    public static class ViewPagerAdapter extends FragmentPagerAdapter {
-        private ArrayList<Fragment> fragments;
-        private ArrayList<String> titles;
-
-        public ViewPagerAdapter(@NonNull FragmentManager fm) {
-            super(fm);
-            this.fragments = new ArrayList<>();
-            this.titles = new ArrayList<>();
-        }
-
-        void addFragments(Fragment fragment, String title) {
-            fragments.add(fragment);
-            titles.add(title);
-        }
-
-        @NonNull
-        @Override
-        public Fragment getItem(int position) {
-            return fragments.get(position);
-        }
-
-        @Override
-        public int getCount() {
-            return fragments.size();
-        }
-
-        @Nullable
-        @Override
-        public CharSequence getPageTitle(int position) {
-            return null;
-        }
-    }
+//    public static class ViewPagerAdapter extends FragmentPagerAdapter {
+//        private ArrayList<Fragment> fragments;
+//        private ArrayList<String> titles;
+//
+//        public ViewPagerAdapter(@NonNull FragmentManager fm) {
+//            super(fm);
+//            this.fragments = new ArrayList<>();
+//            this.titles = new ArrayList<>();
+//        }
+//
+//        void addFragments(Fragment fragment, String title) {
+//            fragments.add(fragment);
+//            titles.add(title);
+//        }
+//
+//        @NonNull
+//        @Override
+//        public Fragment getItem(int position) {
+//            return fragments.get(position);
+//        }
+//
+//        @Override
+//        public int getCount() {
+//            return fragments.size();
+//        }
+//
+//        @Nullable
+//        @Override
+//        public CharSequence getPageTitle(int position) {
+//            return null;
+//        }
+//    }
 
 //    @Override
 //    public boolean onCreateOptionsMenu(Menu menu) {
@@ -494,7 +515,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 myFiles.add(song);
             }
         }
-        SongsFragment.musicAdapter.updateList(myFiles);
+        //SongsFragment.musicAdapter.updateList(myFiles);
         return true;
     }
 
@@ -545,6 +566,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
 
         editor.putBoolean("shuffle", playlistViewModel.getIsShuffle().getValue());
         editor.putBoolean("repeat", playlistViewModel.getIsRepeat().getValue());
+        editor.putString("favorite", libraryViewModel.enCodeFavorite());
         editor.putInt("currentDuration", audioService.getCurrentDuration());
         if (audioService.getCurSong() != null)
             editor.putString("curSong", audioService.getCurSong().getPath());

@@ -14,10 +14,11 @@ public class Library {
     public static final int SORT_BY_DATE = 5000;
     public static final int SORT_NONE = 3000;
     private static final Library _instance = new Library();
-    public static Library getInstance()
-    {
+
+    public static Library getInstance() {
         return _instance;
     }
+
     private ArrayList<Song> allSongs;
     private ArrayList<Album> albums;
     private ArrayList<Song> favoriteSongs;
@@ -48,14 +49,20 @@ public class Library {
         return favoriteSongs;
     }
 
-    public void setFavoriteSongs(ArrayList<Song> favoriteSongs) {
-        this.favoriteSongs = favoriteSongs;
+    public void setFavoriteSongs(String favorite) {
+        if(favorite.equals(""))
+            return;
+        String[] list = favorite.split("[\t]");
+        for (String item: list) {
+            Song song = getSongByPath(item);
+            if(song != null)
+                this.favoriteSongs.add(song);
+        }
     }
 
-    public Album getAlbum(String name, String artist)
-    {
-        for (Album album: albums) {
-            if(album.getName().equals(name) && (album.getArtist().equals(artist) || artist.equals("")))
+    public Album getAlbum(String name, String artist) {
+        for (Album album : albums) {
+            if (album.getName().equals(name) && (album.getArtist().equals(artist) || artist.equals("")))
                 return album;
         }
         return null;
@@ -64,8 +71,7 @@ public class Library {
     public void loadAllSong(Context context, int sortOrder) {
         Uri uri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
         String order;
-        switch (sortOrder)
-        {
+        switch (sortOrder) {
             case SORT_BY_NAME:
                 order = MediaStore.MediaColumns.TITLE + " ASC";
                 break;
@@ -97,16 +103,14 @@ public class Library {
                 String id = cursor.getString(5);
                 String date = cursor.getString(6);
 
-                Song song = new Song(path, title, artist, albumName, duration,  date, id);
+                Song song = new Song(path, title, artist, albumName, duration, date, id);
                 allSongs.add(song);
                 Album album = getAlbum(albumName, artist);
                 if (album == null) {
-                    album = new Album(albumName , date, artist);
+                    album = new Album(albumName, date, artist);
                     album.getSongs().add(song);
                     albums.add(album);
-                }
-                else
-                {
+                } else {
                     album.getSongs().add(song);
                 }
             } while (cursor.moveToNext());
@@ -114,10 +118,8 @@ public class Library {
         }
     }
 
-    public boolean sortSongs(int order)
-    {
-        switch (order)
-        {
+    public boolean sortSongs(int order) {
+        switch (order) {
             case SORT_BY_DATE:
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                     allSongs.sort(new Comparator<Song>() {
@@ -125,9 +127,9 @@ public class Library {
                         public int compare(Song o1, Song o2) {
                             int s1 = Integer.parseInt(o1.getDate());
                             int s2 = Integer.parseInt(o2.getDate());
-                            if(s1 > s2)
+                            if (s1 > s2)
                                 return 1;
-                            if(s1 < s2)
+                            if (s1 < s2)
                                 return -1;
                             return 0;
                         }
@@ -148,5 +150,23 @@ public class Library {
                 return false;
         }
         return true;
+    }
+
+    public String enCodeFavorite() {
+        String res = "\t";
+        for (Song song : favoriteSongs) {
+            res += song.getPath() + "\t";
+        }
+        res = res.substring(1, res.length()-1);
+        return res;
+    }
+
+    public Song getSongByPath(String path)
+    {
+        for (Song song: allSongs) {
+            if(song.getPath().equals(path))
+                return song;
+        }
+        return null;
     }
 }

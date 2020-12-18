@@ -20,23 +20,28 @@ import com.example.myaudioplayer.viewmodel.LibraryViewModel;
 
 import java.util.ArrayList;
 
-public class SongsFragment extends Fragment {
+public class FavoriteFragment extends Fragment {
 
-    RecyclerView recyclerView;
-    MusicAdapter musicAdapter;
+    private RecyclerView recyclerView;
+    private MusicAdapter musicAdapter;
     private LibraryViewModel libraryViewModel;
-    TextView text_list;
+    private TextView text_list;
+
+    public FavoriteFragment() {
+        // Required empty public constructor
+    }
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_songs, container, false);
+        View view= inflater.inflate(R.layout.fragment_favorite, container, false);
         recyclerView = view.findViewById(R.id.recyclerView);
 
         libraryViewModel = ViewModelProviders.of(getActivity()).get(LibraryViewModel.class);
         registerLiveDataListenner();
 
-        musicAdapter = new MusicAdapter(getContext(), libraryViewModel.getSongs().getValue(), Playlist.PLAYLIST_SOURCE_SONG);
+        musicAdapter = new MusicAdapter(getContext(), libraryViewModel.getFavoriteLists().getValue(), Playlist.PLAYLIST_SOURCE_FAVORITE);
         recyclerView.setAdapter(musicAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
         recyclerView.setHasFixedSize(true);
@@ -46,17 +51,17 @@ public class SongsFragment extends Fragment {
     }
 
     private void registerLiveDataListenner() {
-        libraryViewModel.getSongs().observe(this, new Observer<ArrayList<Song>>() {
+        libraryViewModel.getFavoriteLists().observe(this, new Observer<ArrayList<Song>>() {
             @Override
             public void onChanged(ArrayList<Song> songs) {
                 musicAdapter.updateList(songs);
-                setTextSongNum(musicAdapter.getItemCount());
+                setTextFavoriteNum(musicAdapter.getItemCount());
             }
         });
     }
 
-    public void setTextSongNum(int sl)
+    public void setTextFavoriteNum(int sl)
     {
-        text_list.setText("Playlist (" + sl +")");
+        text_list.setText("Favorite (" + sl +")");
     }
 }

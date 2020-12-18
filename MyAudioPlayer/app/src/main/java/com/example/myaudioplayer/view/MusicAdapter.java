@@ -31,10 +31,12 @@ import java.util.ArrayList;
 public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.SongViewHolder> {
     private Context mContext;
     private ArrayList<Song> mFiles;
+    private int source_type;
 
-    public MusicAdapter(Context mContext, ArrayList<Song> songs) {
+    public MusicAdapter(Context mContext, ArrayList<Song> songs, int source) {
         this.mContext = mContext;
         this.mFiles = songs;
+        this.source_type = source;
     }
 
     @NonNull
@@ -63,7 +65,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.SongViewHold
                     intent.setAction(MainActivity.PLAY_NEW_SONG);
                     Bundle bundle = new Bundle();
                     bundle.putInt("position", position);
-                    bundle.putInt("source", Playlist.PLAYLIST_SOURCE_SONG);
+                    bundle.putInt("source", source_type);
                     intent.putExtras(bundle);
                     mContext.startActivity(intent);
                 }

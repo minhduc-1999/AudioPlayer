@@ -18,11 +18,13 @@ public class LibraryViewModel extends BaseViewModel {
     private Library library = Library.getInstance();
     private MutableLiveData<ArrayList<Song>> songs = new MutableLiveData<>();
     private MutableLiveData<ArrayList<Album>> albums = new MutableLiveData<>();
+    private MutableLiveData<ArrayList<Song>> favoriteLists = new MutableLiveData<>();
 
     public LibraryViewModel(@NonNull Application application) {
         super(application);
         songs.setValue(library.getAllSongs());
         albums.setValue(library.getAlbums());
+        favoriteLists.setValue(library.getFavoriteSongs());
     }
 
     public MutableLiveData<ArrayList<Song>> getSongs() {
@@ -33,30 +35,38 @@ public class LibraryViewModel extends BaseViewModel {
         return albums;
     }
 
-    public void loadLocalSong(int order)
-    {
+    public MutableLiveData<ArrayList<Song>> getFavoriteLists() {
+        return favoriteLists;
+    }
+
+    public void loadLocalSong(int order) {
         library.loadAllSong(getApplication().getApplicationContext(), order);
         //songs.postValue(library.getAllSongs());
         //albums.postValue(library.getAlbums());
     }
 
-    public Album getAlbumByName(String name, String artist)
-    {
+    public Album getAlbumByName(String name, String artist) {
         return library.getAlbum(name, artist);
     }
-    public void sortLibrary(final int order)
-    {
+
+    public void sortLibrary(final int order) {
         Thread sortThread = new Thread() {
             @Override
             public void run() {
                 super.run();
-                if(library.sortSongs(order))
-                {
+                if (library.sortSongs(order)) {
                     songs.postValue(library.getAllSongs());
                 }
             }
         };
         sortThread.start();
 
+    }
+
+    public void setFavoriteList(String favorite) {
+        library.setFavoriteSongs(favorite);
+    }
+    public String enCodeFavorite(){
+        return library.enCodeFavorite();
     }
 }

@@ -8,7 +8,7 @@ public class Song {
     private String duration;
     private String id;
     private String date;
-
+    private boolean isFavorite;
     public Song(String path, String title, String artist, String album, String duration,String date, String id) {
         this.path = path;
         this.title = title;
@@ -17,6 +17,15 @@ public class Song {
         this.duration = duration;
         this.id = id;
         this.date = date;
+        this.isFavorite = false;
+    }
+
+    public boolean isFavorite() {
+        return isFavorite;
+    }
+
+    public void setFavorite(boolean favorite) {
+        isFavorite = favorite;
     }
 
     public Song() {

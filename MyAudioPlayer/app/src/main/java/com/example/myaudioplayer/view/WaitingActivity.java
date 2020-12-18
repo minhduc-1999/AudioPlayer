@@ -36,6 +36,7 @@ public class WaitingActivity extends AppCompatActivity {
     private String artist;
     private boolean shuffle;
     private boolean repeat;
+    private String favorite;
     //permission
     public static final int REQUEST_CODE = 1;
     private boolean hasPermission;
@@ -118,6 +119,7 @@ public class WaitingActivity extends AppCompatActivity {
             artist = sharedPreferences.getString("artist", "");
             shuffle = sharedPreferences.getBoolean("shuffle", false);
             repeat = sharedPreferences.getBoolean("repeat", false);
+            favorite = sharedPreferences.getString("favorite", "");
         } else {
             sortOrder = Library.SORT_NONE;
             curDuration = 0;
@@ -127,6 +129,7 @@ public class WaitingActivity extends AppCompatActivity {
             artist = "";
             shuffle = false;
             repeat = false;
+            favorite = "";
         }
     }
 
@@ -153,6 +156,7 @@ public class WaitingActivity extends AppCompatActivity {
     }
 
     public void setRestoredState() {
+        libraryViewModel.setFavoriteList(favorite);
         if (curSong != "")
             playlistViewModel.setState(Playlist.STATE_PAUSE);
         else

@@ -94,6 +94,9 @@ public class PlaylistViewModel extends BaseViewModel {
                 else
                     playlist.setQueue(library.getAllSongs());
                 break;
+            case Playlist.PLAYLIST_SOURCE_FAVORITE:
+                playlist.setQueue(library.getFavoriteSongs());
+                break;
             default:
                 break;
         }
@@ -140,4 +143,5 @@ public class PlaylistViewModel extends BaseViewModel {
     public Song getCurrentSong() {
         return playlist.getNowSong();
     }
+
 }
