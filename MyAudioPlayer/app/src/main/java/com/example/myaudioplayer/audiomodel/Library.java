@@ -55,7 +55,7 @@ public class Library {
         String[] list = favorite.split("[\t]");
         for (String item : list) {
             Song song = getSongByPath(item);
-            if (song != null)
+            if (song != null && !favoriteSongs.contains(song))
             {
                 song.setFavorite(true);
                 this.favoriteSongs.add(song);
@@ -177,6 +177,7 @@ public class Library {
         song.changeFavorite();
         if(song.isFavorite())
         {
+            if(!favoriteSongs.contains(song))
             favoriteSongs.add(song);
         }
         else

@@ -132,9 +132,15 @@ public class PlaylistViewModel extends BaseViewModel {
     public void setCurSong(String path) {
         boolean res = playlist.setNowSong(path);
         if (res)
+        {
             curSong.postValue(playlist.getNowSong());
+            setState(Playlist.STATE_PAUSE);
+
+        }
         else
-            state.postValue(Playlist.STATE_NONE);
+        {
+            setState(Playlist.STATE_NONE);
+        }
     }
 
     public Song getCurrentSong() {

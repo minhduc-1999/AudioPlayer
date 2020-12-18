@@ -13,8 +13,7 @@
         android:layout_marginTop="5dp"
         android:layout_marginBottom="15dp"
         android:text="Favorite (20)"
-        android:textSize="25dp"
-        android:textColor="@color/color_select"
+        android:textAppearance="@style/Title"
         android:id="@+id/text_list"/>
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"

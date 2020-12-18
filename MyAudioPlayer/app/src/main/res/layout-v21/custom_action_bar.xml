@@ -11,21 +11,21 @@
     android:contentInsetEnd="0dp"
     app:contentInsetRight="0dp"
     app:contentInsetEnd="0dp"
-    android:background="@color/colorPrimary">
+    android:background="@drawable/main_bg">
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <ImageView
             android:id="@+id/app_icon"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
             android:layout_centerVertical="true"
             android:src="@mipmap/ic_launcher" />
 
         <SearchView
             android:id="@+id/search_bar"
             android:layout_width="wrap_content"
-            android:layout_height="30dp"
+            android:layout_height="35dp"
             android:layout_toLeftOf="@id/btn_option"
             android:layout_toRightOf="@id/app_icon"
             android:layout_centerVertical="true"
@@ -34,14 +34,14 @@
             android:clickable="true"
             android:layout_marginTop="10dp"
             android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
+            android:layout_marginRight="5dp"
             android:screenReaderFocusable="true"
             android:background="@drawable/search_view_bg" />
 
         <ImageView
             android:id="@+id/btn_option"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
             android:layout_centerVertical="true"
             android:layout_alignParentRight="true"
             android:src="@drawable/ic_round_more_vert_24" />

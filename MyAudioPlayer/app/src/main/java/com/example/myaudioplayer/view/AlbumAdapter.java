@@ -10,11 +10,13 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.myaudioplayer.R;
 import com.example.myaudioplayer.audiomodel.Album;
+import com.example.myaudioplayer.helper.AlbumDiffCallBack;
 
 import java.util.ArrayList;
 
@@ -25,9 +27,9 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumViewHol
     private ArrayList<Album> albums;
     private View view;
 
-    public AlbumAdapter(Context mContext, ArrayList<Album> albums) {
+    public AlbumAdapter(Context mContext) {
         this.mContext = mContext;
-        this.albums = albums;
+        this.albums = new ArrayList<>();
     }
 
     @NonNull
@@ -79,8 +81,14 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumViewHol
     }
 
     void updateList(ArrayList<Album> albums) {
-        this.albums = new ArrayList<>();
+        if(albums == null)
+            return;
+        final AlbumDiffCallBack diffCallback =
+                new AlbumDiffCallBack(this.albums, albums);
+        final DiffUtil.DiffResult diffResult
+                = DiffUtil.calculateDiff(diffCallback);
+        this.albums.clear();
         this.albums.addAll(albums);
-        notifyDataSetChanged();
+        diffResult.dispatchUpdatesTo(this);
     }
 }

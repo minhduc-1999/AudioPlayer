@@ -34,9 +34,7 @@
         android:background="@android:color/transparent"
         android:gravity="center"
         android:text="Now Playing"
-        android:textColor="@color/colorAccent"
-        android:textSize="20dp"
-        android:textStyle="bold" />
+        android:textAppearance="@style/Title" />
 
     <ImageView
         android:id="@+id/cover_art"
@@ -72,8 +70,7 @@
             android:ellipsize="end"
             android:gravity="center_horizontal"
             android:singleLine="true"
-            android:textColor="@color/colorAccent"
-            android:textSize="22sp"
+            android:textAppearance="@style/PrimaryText"
             android:textStyle="bold" />
 
         <TextView
@@ -85,8 +82,8 @@
             android:ellipsize="end"
             android:gravity="center_horizontal"
             android:singleLine="true"
-            android:textColor="@color/colorAccent"
-            android:textSize="18sp" />
+            android:textAppearance="@style/SecondaryText"
+            android:textStyle="bold"/>
     </RelativeLayout>
 
     <RelativeLayout
@@ -161,7 +158,7 @@
             android:layout_alignParentLeft="true"
             android:layout_marginLeft="20dp"
             android:text="00:00"
-            android:textColor="@color/colorAccent" />
+            android:textAppearance="@style/PrimaryText"/>
 
         <TextView
             android:id="@+id/duration_total"
@@ -170,7 +167,7 @@
             android:layout_alignParentRight="true"
             android:layout_marginRight="20dp"
             android:text="00:00"
-            android:textColor="@color/colorAccent" />
+            android:textAppearance="@style/PrimaryText"/>
 
         <SeekBar
             android:id="@+id/seekBar"

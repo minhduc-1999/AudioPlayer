@@ -48,6 +48,12 @@ public class FavoriteFragment extends Fragment implements OnFavoriteChangeListen
         return view;
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        updateList(libraryViewModel.getFavoriteLists().getValue());
+    }
+
     private void registerLiveDataListenner() {
         libraryViewModel.getFavoriteLists().observe(this, new Observer<ArrayList<Song>>() {
             @Override
@@ -66,5 +72,9 @@ public class FavoriteFragment extends Fragment implements OnFavoriteChangeListen
     @Override
     public void OnFavoriteChange(Song song) {
         libraryViewModel.changeFavorite(song);
+    }
+
+    public void updateList(ArrayList<Song> songs) {
+        musicAdapter.updateList(songs);
     }
 }

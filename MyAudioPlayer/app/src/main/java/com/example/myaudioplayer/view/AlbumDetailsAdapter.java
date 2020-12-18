@@ -89,6 +89,8 @@ public class AlbumDetailsAdapter extends RecyclerView.Adapter<MusicAdapter.SongV
         listeners.add(toAdd);
     }
     void updateList(ArrayList<Song> musicFilesArrayList) {
+        if(musicFilesArrayList == null)
+            return;
         final SongDiffCallBack diffCallback =
                 new SongDiffCallBack(songs, musicFilesArrayList);
         final DiffUtil.DiffResult diffResult

@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorPrimary"
+    android:background="@drawable/main_bg"
     tools:context=".view.AlbumFragment">
 
     <TextView
@@ -13,8 +13,7 @@
         android:layout_marginTop="5dp"
         android:layout_marginBottom="15dp"
         android:text="Album (20)"
-        android:textSize="25dp"
-        android:textColor="@color/color_select"
+        android:textAppearance="@style/Title"
         android:id="@+id/text_album_num"/>
     <androidx.recyclerview.widget.RecyclerView
         android:layout_width="match_parent"

@@ -43,9 +43,14 @@ public class SongsFragment extends Fragment implements OnFavoriteChangeListener 
         recyclerView.setAdapter(musicAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
         recyclerView.setHasFixedSize(true);
-
         text_list = view.findViewById(R.id.text_list);
         return view;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        updateList(libraryViewModel.getSongs().getValue());
     }
 
     private void registerLiveDataListenner() {
@@ -70,4 +75,5 @@ public class SongsFragment extends Fragment implements OnFavoriteChangeListener 
     public void updateList(ArrayList<Song> list) {
         musicAdapter.updateList(list);
     }
+
 }

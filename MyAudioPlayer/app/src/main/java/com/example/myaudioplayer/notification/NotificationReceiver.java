@@ -24,15 +24,15 @@ public class NotificationReceiver extends BroadcastReceiver {
             switch ( (intent.getAction()))
             {
                 case PLAYBUTTON:
-                    Toast.makeText(context, "PlayButton click", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(context, "PlayButton click", Toast.LENGTH_SHORT).show();
                     send(context, BRC_NOTIFY_FILTER, BRC_NOTIFY_PLAY);
                     break;
                 case PREBUTTON:
-                    Toast.makeText(context, "pre button click", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(context, "pre button click", Toast.LENGTH_SHORT).show();
                     send(context, BRC_NOTIFY_FILTER, BRC_NOTIFY_PRE);
                     break;
                 case NEXTBUTTON:
-                    Toast.makeText(context, "next button click", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(context, "next button click", Toast.LENGTH_SHORT).show();
                     send(context, BRC_NOTIFY_FILTER, BRC_NOTIFY_NEXT);
                     break;
             }

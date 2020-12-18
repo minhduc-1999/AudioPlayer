@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/main_bg"
     android:orientation="vertical"
     tools:context=".view.MainActivity">
 
@@ -64,8 +65,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Song name"
-                    android:textColor="@android:color/primary_text_dark"
-                    android:textSize="16dp" />
+                    android:singleLine="true"
+                    android:textAppearance="@style/PrimaryText"/>
 
                 <TextView
                     android:id="@+id/song_artist"
@@ -73,8 +74,8 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@id/song_name"
                     android:text="Artist"
-                    android:textColor="@android:color/secondary_text_dark"
-                    android:textSize="12dp" />
+                    android:singleLine="true"
+                    android:textAppearance="@style/SecondaryText"/>
             </RelativeLayout>
 
             <RelativeLayout
@@ -135,7 +136,6 @@
         app:tabIndicatorFullWidth="true"
         app:tabIndicatorGravity="top"
         app:tabIndicatorHeight="3dp"
-        app:tabSelectedTextColor="@color/progress"
-        app:tabTextAppearance="@style/MyCustomTabTextAppearance" />
+        app:tabSelectedTextColor="@color/progress"/>
 
 </RelativeLayout>

@@ -52,7 +52,6 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
 
     private IBinder mBinder;
 
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public void changeAudio(Song song) throws IOException {
         if (mediaPlayer != null) {
             mediaPlayer.stop();
@@ -68,12 +67,14 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
 
         mediaPlayer = new MediaPlayer();
         mediaPlayer.setOnCompletionListener(this);
-        mediaPlayer.setAudioAttributes(
-                new AudioAttributes.Builder()
-                        .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                        .setUsage(AudioAttributes.USAGE_MEDIA)
-                        .build()
-        );
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            mediaPlayer.setAudioAttributes(
+                    new AudioAttributes.Builder()
+                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                            .setUsage(AudioAttributes.USAGE_MEDIA)
+                            .build()
+            );
+        }
         mediaPlayer.setDataSource(getApplicationContext(), uri);
         mediaPlayer.prepare();
         mediaPlayer.start();

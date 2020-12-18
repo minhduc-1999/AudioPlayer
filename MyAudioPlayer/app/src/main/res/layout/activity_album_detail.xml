@@ -4,15 +4,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/colorPrimary"
+    android:background="@drawable/main_bg"
     tools:context=".view.AlbumDetailActivity">
-
     <ImageView
         android:id="@+id/albumPhoto"
         android:layout_width="match_parent"
         android:layout_height="300dp"
         android:scaleType="centerCrop"
-        android:alpha="0.4"
+        android:alpha="0.5"
         android:src="@drawable/music_default"/>
     <RelativeLayout
         android:layout_width="wrap_content"
@@ -23,9 +22,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:textColor="@color/color_select"
             android:gravity="center"
             android:textSize="30dp"
+            android:textAppearance="@style/Title"
             android:id="@+id/album_name"/>
         <TextView
             android:layout_width="match_parent"
@@ -33,10 +32,10 @@
             android:layout_below="@id/album_name"
             android:layout_centerHorizontal="true"
             android:gravity="center"
-            android:layout_marginTop="3dp"
-            android:textSize="15dp"
+            android:layout_marginTop="5dp"
+            android:textAppearance="@style/SecondaryText"
+            android:textSize="25dp"
             android:layout_centerVertical="true"
-            android:textColor="@color/color_none_select"
             android:id="@+id/album_artist"/>
     </RelativeLayout>
 <!--    <ImageView-->

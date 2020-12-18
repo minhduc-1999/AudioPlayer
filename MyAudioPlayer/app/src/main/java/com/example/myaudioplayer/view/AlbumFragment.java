@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myaudioplayer.R;
 import com.example.myaudioplayer.audiomodel.Album;
+import com.example.myaudioplayer.audiomodel.Song;
 import com.example.myaudioplayer.viewmodel.LibraryViewModel;
 
 import java.util.ArrayList;
@@ -34,12 +35,18 @@ public class AlbumFragment extends Fragment {
         registerLiveDataListenner();
 
         recyclerView.setHasFixedSize(true);
-        albumAdapter = new AlbumAdapter(getContext(), libraryViewModel.getAlbums().getValue());
+        albumAdapter = new AlbumAdapter(getContext());
         recyclerView.setAdapter(albumAdapter);
         recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
 
         text_albumNum = view.findViewById(R.id.text_album_num);
         return view;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        updateList(libraryViewModel.getAlbums().getValue());
     }
 
     private void registerLiveDataListenner() {
@@ -54,5 +61,9 @@ public class AlbumFragment extends Fragment {
     public void setTextAlbumNum(int sl)
     {
         text_albumNum.setText("Album (" + sl +")");
+    }
+
+    public void updateList(ArrayList<Album> albums) {
+        albumAdapter.updateList(albums);
     }
 }

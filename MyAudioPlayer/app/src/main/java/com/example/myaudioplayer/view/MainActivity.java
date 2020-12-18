@@ -32,6 +32,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.viewpager.widget.ViewPager;
 
 import com.example.myaudioplayer.R;
+import com.example.myaudioplayer.audiomodel.Album;
 import com.example.myaudioplayer.audiomodel.Library;
 import com.example.myaudioplayer.audiomodel.Playlist;
 import com.example.myaudioplayer.audiomodel.Song;
@@ -119,17 +120,18 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         actionbar.setDisplayShowCustomEnabled(true);
         actionbar.setCustomView(R.layout.custom_action_bar);
 //        actionbar.setElevation(0);
+        initView();
+        initViewPager();
 
         sortOrder = getIntent().getIntExtra("sortOrder", Library.SORT_NONE);
 
         libraryViewModel = ViewModelProviders.of(this).get(LibraryViewModel.class);
         playlistViewModel = ViewModelProviders.of(this).get(PlaylistViewModel.class);
-
         registerLiveDataListenner();
         registerBroadcastReceiver();
+
         doStartAudioService();
-        initView();
-        initViewPager();
+
         initEventListener();
         createNotificationChannel();
         MainActivity.this.runOnUiThread(new Runnable() {
@@ -251,7 +253,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     } catch (Exception e) {
-                                        Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                        //makeToast(e.getMessage(), Toast.LENGTH_SHORT);
+                                        //Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                                     }
                                     break;
                                 default:
@@ -264,7 +267,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                                     try {
                                         audioService.changeAudio(playlistViewModel.nextSong());
                                     } catch (Exception e) {
-                                        Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
+                                        //makeToast(e.getMessage(), Toast.LENGTH_SHORT);
+                                        //Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                                     }
                                     break;
                                 case NotificationReceiver.BRC_NOTIFY_PRE:
@@ -320,14 +324,16 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                                     sortOrder = Library.SORT_BY_DATE;
                                     libraryViewModel.sortLibrary(sortOrder);
                                 } else
-                                    Toast.makeText(MainActivity.this, "Library've been sorted by date", Toast.LENGTH_SHORT).show();
+                                    makeToast("Library've been sorted by date", Toast.LENGTH_SHORT);
+                                    //Toast.makeText(MainActivity.this, "Library've been sorted by date", Toast.LENGTH_SHORT).show();
                                 break;
                             case R.id.by_name:
                                 if (sortOrder != Library.SORT_BY_NAME) {
                                     sortOrder = Library.SORT_BY_NAME;
                                     libraryViewModel.sortLibrary(sortOrder);
                                 } else
-                                    Toast.makeText(MainActivity.this, "Library've been sorted by name", Toast.LENGTH_SHORT).show();
+                                    makeToast("Library've been sorted by name", Toast.LENGTH_SHORT);
+                                    //Toast.makeText(MainActivity.this, "Library've been sorted by name", Toast.LENGTH_SHORT).show();
                                 break;
                         }
                         return true;
@@ -468,47 +474,14 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         });
     }
 
-//    public static class ViewPagerAdapter extends FragmentPagerAdapter {
-//        private ArrayList<Fragment> fragments;
-//        private ArrayList<String> titles;
-//
-//        public ViewPagerAdapter(@NonNull FragmentManager fm) {
-//            super(fm);
-//            this.fragments = new ArrayList<>();
-//            this.titles = new ArrayList<>();
-//        }
-//
-//        void addFragments(Fragment fragment, String title) {
-//            fragments.add(fragment);
-//            titles.add(title);
-//        }
-//
-//        @NonNull
-//        @Override
-//        public Fragment getItem(int position) {
-//            return fragments.get(position);
-//        }
-//
-//        @Override
-//        public int getCount() {
-//            return fragments.size();
-//        }
-//
-//        @Nullable
-//        @Override
-//        public CharSequence getPageTitle(int position) {
-//            return null;
-//        }
-//    }
-
-//    @Override
-//    public boolean onCreateOptionsMenu(Menu menu) {
-//        getMenuInflater().inflate(R.menu.search, menu);
-//        MenuItem menuItem = menu.findItem(R.id.search_option);
-//        SearchView searchView = (SearchView) menuItem.getActionView();
-//        searchView.setOnQueryTextListener(this);
-//        return super.onCreateOptionsMenu(menu);
-//    }
+    public void makeToast(final String message, final int time){
+        MainActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(MainActivity.this, message, time).show();
+            }
+        });
+    }
 
     @Override
     public boolean onQueryTextSubmit(String query) {
@@ -516,15 +489,46 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     }
 
     @Override
-    public boolean onQueryTextChange(String newText) {
-        String userInput = newText.toLowerCase();
-        ArrayList<Song> songs = new ArrayList<>();
-        for (Song song : libraryViewModel.getSongs().getValue()) {
-            if (song.getTitle().toLowerCase().contains(userInput)) {
-                songs.add(song);
+    public boolean onQueryTextChange(final String newText) {
+        Thread filterThread = new Thread() {
+            @Override
+            public void run() {
+                super.run();
+                String userInput = newText.toLowerCase();
+                ArrayList<Song> songs = new ArrayList<>();
+                switch (nowFragment)
+                {
+                    case FAVORITE_FRAGMENT:
+                        for (Song song : libraryViewModel.getFavoriteLists().getValue()) {
+                            if (song.getTitle().toLowerCase().contains(userInput)) {
+                                songs.add(song);
+                            }
+                        }
+                        favoriteFragment.updateList(songs);
+                        break;
+                    case SONG_FRAGMENT:
+                        for (Song song : libraryViewModel.getSongs().getValue()) {
+                            if (song.getTitle().toLowerCase().contains(userInput)) {
+                                songs.add(song);
+                            }
+                        }
+                        songsFragment.updateList(songs);
+                        break;
+                    case ALBUM_FRAGMENT:
+                        ArrayList<Album> albums = new ArrayList<>();
+                        for (Album album : libraryViewModel.getAlbums().getValue()) {
+                            if (album.getName().toLowerCase().contains(userInput)) {
+                                albums.add(album);
+                            }
+                        }
+                        albumFragment.updateList(albums);
+                        break;
+                    default:
+                        break;
+                }
             }
-        }
-        songsFragment.updateList(songs);
+        };
+        filterThread.start();
         //SongsFragment.musicAdapter.updateList(myFiles);
         return true;
     }

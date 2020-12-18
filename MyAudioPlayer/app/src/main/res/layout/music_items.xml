@@ -4,8 +4,6 @@
     android:layout_height="wrap_content"
     android:layout_marginLeft="20dp"
     android:layout_marginRight="20dp"
-    android:layout_marginTop="2dp"
-    android:layout_marginBottom="2dp"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@drawable/music_item_bg"
     android:id="@+id/audio_item">
@@ -35,8 +33,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
-            android:textColor="@android:color/primary_text_dark"
-            android:textSize="50px"
+            android:textAppearance="@style/PrimaryText"
             android:id="@+id/music_file_name"/>
         <TextView
             android:layout_width="match_parent"
@@ -45,7 +42,8 @@
             android:layout_marginTop="3dp"
             android:layout_below="@+id/music_file_name"
             android:layout_centerVertical="true"
-            android:textColor="@android:color/secondary_text_dark"
+            android:textAppearance="@style/SecondaryText"
+            android:singleLine="true"
             android:id="@+id/music_artist_name"/>
     </RelativeLayout>
     <ImageView

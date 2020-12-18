@@ -27,9 +27,9 @@ public class LibraryViewModel extends BaseViewModel {
 
     public LibraryViewModel(@NonNull Application application) {
         super(application);
-        songs.setValue(library.getAllSongs());
-        albums.setValue(library.getAlbums());
-        favoriteLists.setValue(library.getFavoriteSongs());
+        songs.postValue(library.getAllSongs());
+        albums.postValue(library.getAlbums());
+        favoriteLists.postValue(library.getFavoriteSongs());
     }
 
     public MutableLiveData<ArrayList<Song>> getSongs() {
@@ -46,8 +46,6 @@ public class LibraryViewModel extends BaseViewModel {
 
     public void loadLocalSong(int order) {
         library.loadAllSong(getApplication().getApplicationContext(), order);
-        //songs.postValue(library.getAllSongs());
-        //albums.postValue(library.getAlbums());
     }
 
     public Album getAlbumByName(String name, String artist) {

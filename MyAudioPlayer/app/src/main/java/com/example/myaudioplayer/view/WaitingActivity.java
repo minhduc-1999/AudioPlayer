@@ -148,13 +148,9 @@ public class WaitingActivity extends AppCompatActivity {
 
     public void setRestoredState() {
         libraryViewModel.setFavoriteList(favorite);
-        if (curSong != "")
-            playlistViewModel.setState(Playlist.STATE_PAUSE);
-        else
-            playlistViewModel.setState(Playlist.STATE_NONE);
         playlistViewModel.setQueue(source, albumName, artist);
-        playlistViewModel.setCurDuration(curDuration);
         playlistViewModel.setCurSong(curSong);
+        playlistViewModel.setCurDuration(curDuration);
         playlistViewModel.setRepeat(repeat);
         playlistViewModel.setShuffle(shuffle);
     }
