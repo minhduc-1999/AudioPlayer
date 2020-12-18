@@ -1,41 +1,41 @@
 package com.example.myaudioplayer.view;
 
-import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.PorterDuff;
 import android.media.MediaMetadataRetriever;
-import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.PopupMenu;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.myaudioplayer.R;
-import com.example.myaudioplayer.audiomodel.Playlist;
+import com.example.myaudioplayer.audiointerface.OnFavoriteChangeListener;
 import com.example.myaudioplayer.audiomodel.Song;
-import com.google.android.material.snackbar.Snackbar;
+import com.example.myaudioplayer.helper.SongDiffCallBack;
 
-import java.io.File;
 import java.util.ArrayList;
 
+
 public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.SongViewHolder> {
+    private ArrayList<OnFavoriteChangeListener> listeners = new ArrayList<>();
     private Context mContext;
-    private ArrayList<Song> mFiles;
+    private ArrayList<Song> songs;
     private int source_type;
 
     public MusicAdapter(Context mContext, ArrayList<Song> songs, int source) {
         this.mContext = mContext;
-        this.mFiles = songs;
+//        if(songs != null)
+////            this.mFiles = songs;
+////        else
+        this.songs = new ArrayList<>();
         this.source_type = source;
     }
 
@@ -47,12 +47,13 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.SongViewHold
     }
 
     @Override
-    public void onBindViewHolder(@NonNull SongViewHolder holder, final int position) {
-        if(position >= 0 && position < mFiles.size()) {
-            Song file = mFiles.get(position);
-            holder.file_name.setText(file.getTitle());
-            holder.artist_name.setText(file.getArtist());
-            byte[] image = getAlbumArt(file.getPath());
+    public void onBindViewHolder(@NonNull final SongViewHolder holder, final int position) {
+        if (position >= 0 && position < songs.size()) {
+            final Song song = songs.get(position);
+            holder.file_name.setText(song.getTitle());
+            holder.artist_name.setText(song.getArtist());
+            holder.changeFavoriteColor(mContext, song.isFavorite());
+            byte[] image = getAlbumArt(song.getPath());
             if (image != null) {
                 Glide.with(mContext).asBitmap().load(image).into(holder.album_art);
             } else {
@@ -70,45 +71,57 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.SongViewHold
                     mContext.startActivity(intent);
                 }
             });
+            holder.favorite.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    for(OnFavoriteChangeListener fli : listeners) {
+                        fli.OnFavoriteChange(song);
+                        holder.changeFavoriteColor(mContext, song.isFavorite());
+                    }
+                }
+            });
         }
     }
 
-//    private void deleteFile(int position, View v) {
-//        Uri contentUri = ContentUris.withAppendedId(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, Long.parseLong(mFiles.get(position).getId()));
-//        File file = new File(mFiles.get(position).getPath());
-//        boolean deleted = file.delete();
-//        if (deleted) {
-//            mContext.getContentResolver().delete(contentUri, null, null);
-//            mFiles.remove(position);
-//            notifyItemRemoved(position);
-//            notifyItemRangeChanged(position, mFiles.size());
-//            Snackbar.make(v, "Song Deleted", Snackbar.LENGTH_LONG).show();
-//        }
-//        else {
-//            Snackbar.make(v, "Can't delete this song", Snackbar.LENGTH_LONG).show();
-//        }
-//    }
+    void updateList(ArrayList<Song> musicFilesArrayList) {
+        final SongDiffCallBack diffCallback =
+                new SongDiffCallBack(this.songs, musicFilesArrayList);
+        final DiffUtil.DiffResult diffResult
+                = DiffUtil.calculateDiff(diffCallback);
+        this.songs.clear();
+        this.songs.addAll(musicFilesArrayList);
+        diffResult.dispatchUpdatesTo(this);
+    }
 
     @Override
     public int getItemCount() {
-        return mFiles.size();
+        return songs.size();
     }
 
 
-    public static class SongViewHolder extends RecyclerView.ViewHolder{
+    public static class SongViewHolder extends RecyclerView.ViewHolder {
         TextView file_name;
         TextView artist_name;
         ImageView album_art;
+        ImageView favorite;
+
         public SongViewHolder(@NonNull View itemView) {
             super(itemView);
             file_name = itemView.findViewById(R.id.music_file_name);
             album_art = itemView.findViewById(R.id.music_img);
             artist_name = itemView.findViewById(R.id.music_artist_name);
+            favorite = itemView.findViewById(R.id.favorite);
+        }
+
+        public void changeFavoriteColor(Context context, boolean favorite) {
+            if (favorite)
+                this.favorite.getDrawable().setColorFilter(context.getResources().getColor(R.color.progress), PorterDuff.Mode.SRC_IN);
+            else
+                this.favorite.getDrawable().setColorFilter(context.getResources().getColor(R.color.colorAccent), PorterDuff.Mode.SRC_IN);
         }
     }
 
-    private byte[] getAlbumArt(String uri)
-    {
+    private byte[] getAlbumArt(String uri) {
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         retriever.setDataSource(uri);
         byte[] art = retriever.getEmbeddedPicture();
@@ -116,9 +129,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.SongViewHold
         return art;
     }
 
-    void updateList(ArrayList<Song> musicFilesArrayList) {
-        mFiles = new ArrayList<>();
-        mFiles.addAll(musicFilesArrayList);
-        notifyDataSetChanged();
+    public void addListener(OnFavoriteChangeListener toAdd) {
+        listeners.add(toAdd);
     }
 }

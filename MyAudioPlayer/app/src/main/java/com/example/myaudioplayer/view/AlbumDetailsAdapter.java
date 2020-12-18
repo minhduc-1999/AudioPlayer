@@ -7,26 +7,35 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.myaudioplayer.R;
+import com.example.myaudioplayer.audiointerface.OnFavoriteChangeListener;
 import com.example.myaudioplayer.audiomodel.Album;
 import com.example.myaudioplayer.audiomodel.Playlist;
 import com.example.myaudioplayer.audiomodel.Song;
+import com.example.myaudioplayer.helper.SongDiffCallBack;
+
+import java.util.ArrayList;
 
 public class AlbumDetailsAdapter extends RecyclerView.Adapter<MusicAdapter.SongViewHolder> {
     private Context mContext;
     private Album album;
     private View view;
-
+    private ArrayList<Song> songs;
+    private ArrayList<OnFavoriteChangeListener> listeners = new ArrayList<>();
     public AlbumDetailsAdapter(Context mContext, Album album) {
         this.mContext = mContext;
         this.album = album;
+        songs = new ArrayList<>();
+        songs.addAll(album.getSongs());
     }
 
     @NonNull
@@ -38,8 +47,9 @@ public class AlbumDetailsAdapter extends RecyclerView.Adapter<MusicAdapter.SongV
 
     @Override
     public void onBindViewHolder(@NonNull final MusicAdapter.SongViewHolder holder, final int position) {
-        final Song song = album.getSongs().get(position);
+        final Song song = songs.get(position);
         holder.file_name.setText(song.getTitle());
+        holder.changeFavoriteColor(mContext, song.isFavorite());
         byte[] image = getAlbumArt(song.getPath());
         if (image != null) {
             Glide.with(mContext).asBitmap().load(image).into(holder.album_art);
@@ -60,24 +70,33 @@ public class AlbumDetailsAdapter extends RecyclerView.Adapter<MusicAdapter.SongV
                 mContext.startActivity(intent);
             }
         });
+        holder.favorite.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                for(OnFavoriteChangeListener fli : listeners) {
+                    fli.OnFavoriteChange(song);
+                    holder.changeFavoriteColor(mContext, song.isFavorite());
+                }
+            }
+        });
 
     }
 
     @Override
     public int getItemCount() {
-        return album.getSongs().size();
+        return songs.size();
     }
 
-    public class MyHolder extends RecyclerView.ViewHolder {
-        ImageView album_image;
-        TextView album_name;
-
-        public MyHolder(@NonNull View itemView) {
-            super(itemView);
-            album_image = itemView.findViewById(R.id.music_img);
-            album_name = itemView.findViewById(R.id.music_file_name);
-        }
-    }
+//    public class MyHolder extends RecyclerView.ViewHolder {
+//        ImageView album_image;
+//        TextView album_name;
+//
+//        public MyHolder(@NonNull View itemView) {
+//            super(itemView);
+//            album_image = itemView.findViewById(R.id.music_img);
+//            album_name = itemView.findViewById(R.id.music_file_name);
+//        }
+//    }
 
     private byte[] getAlbumArt(String uri) {
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
@@ -85,5 +104,17 @@ public class AlbumDetailsAdapter extends RecyclerView.Adapter<MusicAdapter.SongV
         byte[] art = retriever.getEmbeddedPicture();
         retriever.release();
         return art;
+    }
+    public void addListener(OnFavoriteChangeListener toAdd) {
+        listeners.add(toAdd);
+    }
+    void updateList(ArrayList<Song> musicFilesArrayList) {
+        final SongDiffCallBack diffCallback =
+                new SongDiffCallBack(songs, musicFilesArrayList);
+        final DiffUtil.DiffResult diffResult
+                = DiffUtil.calculateDiff(diffCallback);
+        this.songs.clear();
+        this.songs.addAll(musicFilesArrayList);
+        diffResult.dispatchUpdatesTo(this);
     }
 }

@@ -8,10 +8,15 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.example.myaudioplayer.audiomodel.Album;
 import com.example.myaudioplayer.audiomodel.Library;
+import com.example.myaudioplayer.audiomodel.Playlist;
 import com.example.myaudioplayer.audiomodel.Song;
 
 
 import java.util.ArrayList;
+
+import static com.example.myaudioplayer.audiomodel.Playlist.PLAYLIST_SOURCE_ALBUM;
+import static com.example.myaudioplayer.audiomodel.Playlist.PLAYLIST_SOURCE_FAVORITE;
+import static com.example.myaudioplayer.audiomodel.Playlist.PLAYLIST_SOURCE_SONG;
 
 public class LibraryViewModel extends BaseViewModel {
 
@@ -66,7 +71,13 @@ public class LibraryViewModel extends BaseViewModel {
     public void setFavoriteList(String favorite) {
         library.setFavoriteSongs(favorite);
     }
-    public String enCodeFavorite(){
+
+    public String enCodeFavorite() {
         return library.enCodeFavorite();
+    }
+
+    public void changeFavorite(Song song) {
+        library.changFavorite(song);
+        favoriteLists.postValue(library.getFavoriteSongs());
     }
 }

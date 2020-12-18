@@ -50,13 +50,17 @@ public class Library {
     }
 
     public void setFavoriteSongs(String favorite) {
-        if(favorite.equals(""))
+        if (favorite.equals(""))
             return;
         String[] list = favorite.split("[\t]");
-        for (String item: list) {
+        for (String item : list) {
             Song song = getSongByPath(item);
-            if(song != null)
+            if (song != null)
+            {
+                song.setFavorite(true);
                 this.favoriteSongs.add(song);
+            }
+
         }
     }
 
@@ -157,16 +161,28 @@ public class Library {
         for (Song song : favoriteSongs) {
             res += song.getPath() + "\t";
         }
-        res = res.substring(1, res.length()-1);
+        //res = res.substring(1, res.length() - 1);
         return res;
     }
 
-    public Song getSongByPath(String path)
-    {
-        for (Song song: allSongs) {
-            if(song.getPath().equals(path))
+    public Song getSongByPath(String path) {
+        for (Song song : allSongs) {
+            if (song.getPath().equals(path))
                 return song;
         }
         return null;
+    }
+
+    public void changFavorite(Song song) {
+        song.changeFavorite();
+        if(song.isFavorite())
+        {
+            favoriteSongs.add(song);
+        }
+        else
+        {
+            if(favoriteSongs.contains(song))
+                favoriteSongs.remove(song);
+        }
     }
 }

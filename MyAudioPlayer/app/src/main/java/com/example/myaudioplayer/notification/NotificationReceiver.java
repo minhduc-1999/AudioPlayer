@@ -10,6 +10,7 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import static com.example.myaudioplayer.audioservice.AudioService.NEXTBUTTON;
 import static com.example.myaudioplayer.audioservice.AudioService.PLAYBUTTON;
 import static com.example.myaudioplayer.audioservice.AudioService.PREBUTTON;
+import static com.example.myaudioplayer.helper.NotificationHelper.send;
 
 public class NotificationReceiver extends BroadcastReceiver {
     public static final String BRC_NOTIFY_FILTER = "BRC_NOTIFY_ACTION";
@@ -38,11 +39,5 @@ public class NotificationReceiver extends BroadcastReceiver {
         }
 
     }
-    public void send(Context context, String filter, String job)
-    {
-        Intent intent = new Intent();
-        intent.setAction(filter);
-        intent.putExtra("job", job);
-        LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
-    }
+
 }

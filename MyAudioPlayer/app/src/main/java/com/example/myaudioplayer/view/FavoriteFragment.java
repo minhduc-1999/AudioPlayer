@@ -14,22 +14,19 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.myaudioplayer.R;
+import com.example.myaudioplayer.audiointerface.OnFavoriteChangeListener;
 import com.example.myaudioplayer.audiomodel.Playlist;
 import com.example.myaudioplayer.audiomodel.Song;
 import com.example.myaudioplayer.viewmodel.LibraryViewModel;
 
 import java.util.ArrayList;
 
-public class FavoriteFragment extends Fragment {
+public class FavoriteFragment extends Fragment implements OnFavoriteChangeListener {
 
     private RecyclerView recyclerView;
     private MusicAdapter musicAdapter;
     private LibraryViewModel libraryViewModel;
     private TextView text_list;
-
-    public FavoriteFragment() {
-        // Required empty public constructor
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -42,6 +39,7 @@ public class FavoriteFragment extends Fragment {
         registerLiveDataListenner();
 
         musicAdapter = new MusicAdapter(getContext(), libraryViewModel.getFavoriteLists().getValue(), Playlist.PLAYLIST_SOURCE_FAVORITE);
+        musicAdapter.addListener(this);
         recyclerView.setAdapter(musicAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
         recyclerView.setHasFixedSize(true);
@@ -63,5 +61,10 @@ public class FavoriteFragment extends Fragment {
     public void setTextFavoriteNum(int sl)
     {
         text_list.setText("Favorite (" + sl +")");
+    }
+
+    @Override
+    public void OnFavoriteChange(Song song) {
+        libraryViewModel.changeFavorite(song);
     }
 }

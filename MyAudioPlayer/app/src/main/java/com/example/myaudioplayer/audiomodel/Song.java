@@ -9,7 +9,8 @@ public class Song {
     private String id;
     private String date;
     private boolean isFavorite;
-    public Song(String path, String title, String artist, String album, String duration,String date, String id) {
+
+    public Song(String path, String title, String artist, String album, String duration, String date, String id) {
         this.path = path;
         this.title = title;
         this.artist = artist;
@@ -20,16 +21,21 @@ public class Song {
         this.isFavorite = false;
     }
 
-    public boolean isFavorite() {
-        return isFavorite;
-    }
-
     public void setFavorite(boolean favorite) {
         isFavorite = favorite;
     }
 
+    public boolean isFavorite() {
+        return isFavorite;
+    }
+
+    public void changeFavorite() {
+        isFavorite = !isFavorite;
+    }
+
     public Song() {
     }
+
     public String getDate() {
         return date;
     }
@@ -85,4 +91,5 @@ public class Song {
     public void setId(String id) {
         this.id = id;
     }
+
 }

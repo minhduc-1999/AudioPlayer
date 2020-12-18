@@ -13,12 +13,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.myaudioplayer.R;
+import com.example.myaudioplayer.audiointerface.OnFavoriteChangeListener;
 import com.example.myaudioplayer.audiomodel.Album;
+import com.example.myaudioplayer.audiomodel.Song;
 import com.example.myaudioplayer.viewmodel.LibraryViewModel;
 
 import static com.example.myaudioplayer.helper.AnimationHelper.ImageAnimation;
 
-public class AlbumDetailActivity extends AppCompatActivity {
+public class AlbumDetailActivity extends AppCompatActivity implements OnFavoriteChangeListener {
     private LibraryViewModel libraryViewModel;
 
     private RecyclerView recyclerView;
@@ -73,14 +75,25 @@ public class AlbumDetailActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    protected void onStart() {
+        super.onStart();
         if (!(album.getSongs().size() < 1)) {
             albumDetailsAdapter = new AlbumDetailsAdapter(this, album);
+            albumDetailsAdapter.addListener(this);
             recyclerView.setAdapter(albumDetailsAdapter);
             recyclerView.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL, false));
         }
     }
+
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        if (!(album.getSongs().size() < 1)) {
+//            albumDetailsAdapter = new AlbumDetailsAdapter(this, album);
+//            recyclerView.setAdapter(albumDetailsAdapter);
+//            recyclerView.setLayoutManager(new LinearLayoutManager(this, RecyclerView.VERTICAL, false));
+//        }
+//    }
 
     private byte[] getAlbumArt(String uri) {
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
@@ -88,5 +101,10 @@ public class AlbumDetailActivity extends AppCompatActivity {
         byte[] art = retriever.getEmbeddedPicture();
         retriever.release();
         return art;
+    }
+
+    @Override
+    public void OnFavoriteChange(Song song) {
+        libraryViewModel.changeFavorite(song);
     }
 }
