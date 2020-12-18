@@ -38,7 +38,7 @@ public class FavoriteFragment extends Fragment implements OnFavoriteChangeListen
         libraryViewModel = ViewModelProviders.of(getActivity()).get(LibraryViewModel.class);
         registerLiveDataListenner();
 
-        musicAdapter = new MusicAdapter(getContext(), libraryViewModel.getFavoriteLists().getValue(), Playlist.PLAYLIST_SOURCE_FAVORITE);
+        musicAdapter = new MusicAdapter(getContext(), Playlist.PLAYLIST_SOURCE_FAVORITE);
         musicAdapter.addListener(this);
         recyclerView.setAdapter(musicAdapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));

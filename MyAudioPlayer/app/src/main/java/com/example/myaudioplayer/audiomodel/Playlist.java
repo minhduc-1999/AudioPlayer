@@ -73,11 +73,13 @@ public class Playlist {
             for (Song song : queue) {
                 if (song.getPath().equals(path)) {
                     nowSong = song;
+                    state = STATE_PAUSE;
                     return true;
                 }
             }
         }
         nowSong = null;
+        state = STATE_NONE;
         return false;
     }
 

@@ -33,9 +33,6 @@ public class Song {
         isFavorite = !isFavorite;
     }
 
-    public Song() {
-    }
-
     public String getDate() {
         return date;
     }

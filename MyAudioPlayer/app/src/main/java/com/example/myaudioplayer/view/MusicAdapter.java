@@ -3,7 +3,7 @@ package com.example.myaudioplayer.view;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PorterDuff;
-import android.media.MediaMetadataRetriever;
+
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,6 +23,8 @@ import com.example.myaudioplayer.helper.SongDiffCallBack;
 
 import java.util.ArrayList;
 
+import static com.example.myaudioplayer.helper.Helper.getEmbeddedArt;
+
 
 public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.SongViewHolder> {
     private ArrayList<OnFavoriteChangeListener> listeners = new ArrayList<>();
@@ -30,11 +32,8 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.SongViewHold
     private ArrayList<Song> songs;
     private int source_type;
 
-    public MusicAdapter(Context mContext, ArrayList<Song> songs, int source) {
+    public MusicAdapter(Context mContext, int source) {
         this.mContext = mContext;
-//        if(songs != null)
-////            this.mFiles = songs;
-////        else
         this.songs = new ArrayList<>();
         this.source_type = source;
     }
@@ -53,7 +52,7 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.SongViewHold
             holder.file_name.setText(song.getTitle());
             holder.artist_name.setText(song.getArtist());
             holder.changeFavoriteColor(mContext, song.isFavorite());
-            byte[] image = getAlbumArt(song.getPath());
+            byte[] image = getEmbeddedArt(song.getPath());
             if (image != null) {
                 Glide.with(mContext).asBitmap().load(image).into(holder.album_art);
             } else {
@@ -119,14 +118,6 @@ public class MusicAdapter extends RecyclerView.Adapter<MusicAdapter.SongViewHold
             else
                 this.favorite.getDrawable().setColorFilter(context.getResources().getColor(R.color.colorAccent), PorterDuff.Mode.SRC_IN);
         }
-    }
-
-    private byte[] getAlbumArt(String uri) {
-        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        retriever.setDataSource(uri);
-        byte[] art = retriever.getEmbeddedPicture();
-        retriever.release();
-        return art;
     }
 
     public void addListener(OnFavoriteChangeListener toAdd) {

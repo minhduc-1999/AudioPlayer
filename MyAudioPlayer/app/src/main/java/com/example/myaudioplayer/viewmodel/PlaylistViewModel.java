@@ -9,6 +9,7 @@ import com.example.myaudioplayer.audiomodel.Album;
 import com.example.myaudioplayer.audiomodel.Library;
 import com.example.myaudioplayer.audiomodel.Playlist;
 import com.example.myaudioplayer.audiomodel.Song;
+import com.example.myaudioplayer.audioservice.AudioService;
 
 public class PlaylistViewModel extends BaseViewModel {
     public PlaylistViewModel(@NonNull Application application) {
@@ -59,11 +60,15 @@ public class PlaylistViewModel extends BaseViewModel {
         playlist.setRepeat(isRepeat);
     }
 
-    public Song nextSong() {
+    public Song nextSong() throws Exception {
         Song temp = playlist.nextSong();
         if (temp != null)
+        {
             curSong.postValue(temp);
-        return temp;
+            return temp;
+        }
+            state.postValue(Playlist.STATE_NONE);
+            throw new Exception("Queue empty");
     }
 
     public Song preSong() {
@@ -101,16 +106,6 @@ public class PlaylistViewModel extends BaseViewModel {
                 break;
         }
         playlist.setCurrentSource(source);
-//        if (source == Playlist.PLAYLIST_SOURCE_SONG)
-//            playlist.setQueue(library.getAllSongs());
-//        else if (source == Playlist.PLAYLIST_SOURCE_ALBUM) {
-//            Album album = library.getAlbum(name, artist);
-//            if (album != null)
-//                playlist.setQueue(album.getSongs());
-//            else
-//                playlist.setQueue(library.getAllSongs());
-//        }
-//        playlist.setCurrentSource(source);
     }
 
     public String getCurrentAlbumQueue() {
@@ -138,6 +133,8 @@ public class PlaylistViewModel extends BaseViewModel {
         boolean res = playlist.setNowSong(path);
         if (res)
             curSong.postValue(playlist.getNowSong());
+        else
+            state.postValue(Playlist.STATE_NONE);
     }
 
     public Song getCurrentSong() {

@@ -48,15 +48,7 @@ public class WaitingActivity extends AppCompatActivity {
         setContentView(R.layout.activity_waiting);
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-
-        //hasPermission = false;
-
         permission();
-//        if (!hasPermission) {
-//            finish();
-//            System.exit(0);
-//        }
-
     }
 
     private void doIfHasPermisstion() {
@@ -89,7 +81,6 @@ public class WaitingActivity extends AppCompatActivity {
         if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
             requestStoragePermission();
         } else {
-            //hasPermission = true;
             doIfHasPermisstion();
         }
     }

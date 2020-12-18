@@ -2,7 +2,6 @@ package com.example.myaudioplayer.view;
 
 import android.content.Context;
 import android.content.Intent;
-import android.media.MediaMetadataRetriever;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,9 +14,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.myaudioplayer.R;
-import com.example.myaudioplayer.audiomodel.*;
+import com.example.myaudioplayer.audiomodel.Album;
 
 import java.util.ArrayList;
+
+import static com.example.myaudioplayer.helper.Helper.getEmbeddedArt;
 
 public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumViewHolder> {
     private Context mContext;
@@ -41,7 +42,7 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumViewHol
         if (position >= 0 && position < albums.size()) {
             final Album album = albums.get(position);
             holder.album_name.setText(album.getName());
-            byte[] image = getAlbumArt(album.getSongs().get(0).getPath());
+            byte[] image = getEmbeddedArt(album.getSongs().get(0).getPath());
             if (image != null) {
                 Glide.with(mContext).asBitmap().load(image).into(holder.album_image);
             } else {
@@ -75,14 +76,6 @@ public class AlbumAdapter extends RecyclerView.Adapter<AlbumAdapter.AlbumViewHol
             album_image = itemView.findViewById(R.id.album_image);
             album_name = itemView.findViewById(R.id.album_name);
         }
-    }
-
-    private byte[] getAlbumArt(String uri) {
-        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        retriever.setDataSource(uri);
-        byte[] art = retriever.getEmbeddedPicture();
-        retriever.release();
-        return art;
     }
 
     void updateList(ArrayList<Album> albums) {

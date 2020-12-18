@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,6 +20,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.bumptech.glide.Glide;
 import com.example.myaudioplayer.R;
 import com.example.myaudioplayer.audiomodel.Playlist;
 import com.example.myaudioplayer.audiomodel.Song;
@@ -29,6 +31,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import java.io.IOException;
 
 import static com.example.myaudioplayer.helper.AnimationHelper.ImageAnimation;
+import static com.example.myaudioplayer.helper.Helper.getEmbeddedArt;
 
 
 public class PlayerActivity extends AppCompatActivity {
@@ -134,6 +137,8 @@ public class PlayerActivity extends AppCompatActivity {
                             audioService.changeAudio(playlistViewModel.nextSong());
                         } catch (IOException e) {
                             e.printStackTrace();
+                        } catch (Exception e) {
+                            Toast.makeText(PlayerActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     default:
                 }
@@ -241,8 +246,8 @@ public class PlayerActivity extends AppCompatActivity {
                     public void onClick(View v) {
                         try {
                             nextBtnClick();
-                        } catch (IOException e) {
-                            e.printStackTrace();
+                        } catch (Exception e) {
+                            Toast.makeText(PlayerActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
@@ -252,7 +257,7 @@ public class PlayerActivity extends AppCompatActivity {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    private void nextBtnClick() throws IOException {
+    private void nextBtnClick() throws Exception {
         if (isBound) {
             audioService.changeAudio(playlistViewModel.nextSong());
         }
@@ -377,20 +382,17 @@ public class PlayerActivity extends AppCompatActivity {
         song_name.setText(musicFiles.getTitle());
         artist_name.setText(musicFiles.getArtist());
 
-
-        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        retriever.setDataSource(musicFiles.getPath());
-        byte[] art = retriever.getEmbeddedPicture();
-        //Bitmap bitmap;
+        byte[] art = getEmbeddedArt(musicFiles.getPath());
         if (art != null) {
-            //bitmap = BitmapFactory.decodeByteArray(art, 0, art.length);
             //Glide.with(this).load(bitmap).apply(RequestOptions.bitmapTransform(new CropCircleTranformation())).into(cover_art);
             ImageAnimation(this, cover_art, art, true);
             ImageAnimation(this, art_background, art, false);
+//            Glide.with(this).load(art).into(art_background);
+
         } else {
-            //bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.background);
             //Glide.with(this).load(bitmap).apply(RequestOptions.bitmapTransform(new CropCircleTranformation())).into(cover_art);
             ImageAnimation(this, cover_art,  R.drawable.background, true);
+//            Glide.with(this).load(R.drawable.background).into(art_background);
             ImageAnimation(this, art_background,  R.drawable.background, false);
         }
     }

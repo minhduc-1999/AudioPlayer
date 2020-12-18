@@ -46,6 +46,7 @@ import java.util.ArrayList;
 
 import static com.example.myaudioplayer.audioservice.AudioService.BRC_SERVICE_FILTER;
 import static com.example.myaudioplayer.helper.AnimationHelper.ImageAnimation;
+import static com.example.myaudioplayer.helper.Helper.getEmbeddedArt;
 
 public class MainActivity extends AppCompatActivity implements SearchView.OnQueryTextListener {
 
@@ -91,8 +92,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private BroadcastReceiver broadcastReceiver;
     private boolean isBound = false;
     ///////////////
-
-
+    //Fragment
+    SongsFragment songsFragment;
+    FavoriteFragment favoriteFragment;
+    AlbumFragment albumFragment;
+    ///
     private Handler handler = new Handler();
 
     public static final String MCHANNEL = "MCHANNEL";
@@ -169,16 +173,17 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         playlistViewModel.getCurSong().observe(this, new Observer<Song>() {
             @Override
             public void onChanged(Song song) {
-                setMetaData(song);
+                if (song != null)
+                    setMetaData(song);
             }
         });
         playlistViewModel.getState().observe(this, new Observer<Integer>() {
             @Override
             public void onChanged(Integer s) {
-                if (s.equals(Playlist.STATE_PLAY)) {
+                if (s == Playlist.STATE_PLAY) {
                     play_pause_btn.setImageResource(R.drawable.ic_round_pause_24);
                     nowPlayingBar.setVisibility(View.VISIBLE);
-                } else if (s.equals(Playlist.STATE_PAUSE)) {
+                } else if (s == Playlist.STATE_PAUSE) {
                     play_pause_btn.setImageResource(R.drawable.ic_round_play_arrow_24);
                     nowPlayingBar.setVisibility(View.VISIBLE);
                 } else
@@ -245,6 +250,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                                         audioService.changeAudio(playlistViewModel.nextSong());
                                     } catch (IOException e) {
                                         e.printStackTrace();
+                                    } catch (Exception e) {
+                                        Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                                     }
                                     break;
                                 default:
@@ -256,8 +263,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                                 case NotificationReceiver.BRC_NOTIFY_NEXT:
                                     try {
                                         audioService.changeAudio(playlistViewModel.nextSong());
-                                    } catch (IOException e) {
-                                        e.printStackTrace();
+                                    } catch (Exception e) {
+                                        Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                                     }
                                     break;
                                 case NotificationReceiver.BRC_NOTIFY_PRE:
@@ -367,8 +374,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                 if (isBound) {
                     try {
                         audioService.changeAudio(playlistViewModel.nextSong());
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    } catch (Exception e) {
+                        Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 }
             }
@@ -393,9 +400,10 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         song_name.setText(musicFiles.getTitle());
         artist_name.setText(musicFiles.getArtist());
 
-        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        retriever.setDataSource(musicFiles.getPath());
-        byte[] art = retriever.getEmbeddedPicture();
+//        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+//        retriever.setDataSource(musicFiles.getPath());
+//        byte[] art = retriever.getEmbeddedPicture();
+        byte[] art = getEmbeddedArt(musicFiles.getPath());
         //Bitmap bitmap;
         if (art != null) {
             //bitmap = BitmapFactory.decodeByteArray(art, 0, art.length);
@@ -412,11 +420,15 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     private void initViewPager() {
         viewPager = findViewById(R.id.viewpager);
         tabLayout = findViewById(R.id.tab_layout);
+
+        songsFragment = new SongsFragment();
+        albumFragment = new AlbumFragment();
+        favoriteFragment = new FavoriteFragment();
         nowFragment = SONG_FRAGMENT;
         ViewPagerAdapter viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
-        viewPagerAdapter.addFragments(new SongsFragment(), "Songs");
-        viewPagerAdapter.addFragments(new AlbumFragment(), "Albums");
-        viewPagerAdapter.addFragments(new FavoriteFragment(), "Favorite");
+        viewPagerAdapter.addFragments(songsFragment, "Songs");
+        viewPagerAdapter.addFragments(albumFragment, "Albums");
+        viewPagerAdapter.addFragments(favoriteFragment, "Favorite");
         viewPager.setAdapter(viewPagerAdapter);
         tabLayout.setupWithViewPager(viewPager);
 
@@ -424,15 +436,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         tabLayout.getTabAt(1).setIcon(R.drawable.ic_round_library_music_24);
         tabLayout.getTabAt(2).setIcon(R.drawable.ic_round_favorite_24);
 
-        //tabLayout.getTabAt(0).setText(viewPagerAdapter.getPageTitle(0));
-        //tabLayout.getTabAt(1).setText(viewPagerAdapter.getPageTitle(1));
         tabLayout.setOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 tab.getIcon().setColorFilter(getResources().getColor(R.color.progress), PorterDuff.Mode.SRC_IN);
                 int pos = tab.getPosition();
-                switch (pos)
-                {
+                switch (pos) {
                     case 0:
                         nowFragment = SONG_FRAGMENT;
                         break;
@@ -509,12 +518,13 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
     @Override
     public boolean onQueryTextChange(String newText) {
         String userInput = newText.toLowerCase();
-        ArrayList<Song> myFiles = new ArrayList<>();
+        ArrayList<Song> songs = new ArrayList<>();
         for (Song song : libraryViewModel.getSongs().getValue()) {
             if (song.getTitle().toLowerCase().contains(userInput)) {
-                myFiles.add(song);
+                songs.add(song);
             }
         }
+        songsFragment.updateList(songs);
         //SongsFragment.musicAdapter.updateList(myFiles);
         return true;
     }
