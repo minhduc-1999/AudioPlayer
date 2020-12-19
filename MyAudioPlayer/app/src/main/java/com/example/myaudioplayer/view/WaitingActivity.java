@@ -14,6 +14,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -62,9 +63,9 @@ public class WaitingActivity extends AppCompatActivity {
                     loadAppState();
                     libraryViewModel.loadLocalSong(sortOrder);
                     setRestoredState();
-                    sleep(5000);  //Delay of 5 seconds
+                    //sleep(3000);  //Delay of 5 seconds
                 } catch (Exception e) {
-
+                    int i = 3;
                 } finally {
                     Intent i = new Intent(WaitingActivity.this,
                             MainActivity.class);

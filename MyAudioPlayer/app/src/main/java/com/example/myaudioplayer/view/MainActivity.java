@@ -578,8 +578,8 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         SharedPreferences sharedPreferences = this.getSharedPreferences("MusicPlayerSetting", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
 
-        editor.putBoolean("shuffle", playlistViewModel.getIsShuffle().getValue());
-        editor.putBoolean("repeat", playlistViewModel.getIsRepeat().getValue());
+        editor.putBoolean("shuffle", playlistViewModel.getShuffle());
+        editor.putBoolean("repeat", playlistViewModel.getRepeat());
         editor.putString("favorite", libraryViewModel.enCodeFavorite());
         editor.putInt("currentDuration", audioService.getCurrentDuration());
         if (audioService.getCurSong() != null)
@@ -595,6 +595,6 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
         if (!artist.equals(""))
             editor.putString("artist", artist);
         editor.apply();
-        Toast.makeText(this, "App Setting saved!", Toast.LENGTH_LONG).show();
+        //Toast.makeText(this, "App Setting saved!", Toast.LENGTH_LONG).show();
     }
 }

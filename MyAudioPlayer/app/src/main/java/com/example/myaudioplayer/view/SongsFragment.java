@@ -34,15 +34,11 @@ public class SongsFragment extends Fragment implements OnFavoriteChangeListener 
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_songs, container, false);
         recyclerView = view.findViewById(R.id.recyclerView);
+        recyclerView.setHasFixedSize(true);
 
         libraryViewModel = ViewModelProviders.of(getActivity()).get(LibraryViewModel.class);
         registerLiveDataListenner();
 
-        musicAdapter = new MusicAdapter(getContext(), PLAYLIST_SOURCE_SONG);
-        musicAdapter.addListener(this);
-        recyclerView.setAdapter(musicAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
-        recyclerView.setHasFixedSize(true);
         text_list = view.findViewById(R.id.text_list);
         return view;
     }
@@ -50,21 +46,30 @@ public class SongsFragment extends Fragment implements OnFavoriteChangeListener 
     @Override
     public void onStart() {
         super.onStart();
+        musicAdapter = new MusicAdapter(getContext(), PLAYLIST_SOURCE_SONG);
+        musicAdapter.addListener(this);
+        recyclerView.setAdapter(musicAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
+
         updateList(libraryViewModel.getSongs().getValue());
+        setTextSongNum(musicAdapter.getItemCount());
+
     }
 
     private void registerLiveDataListenner() {
         libraryViewModel.getSongs().observe(this, new Observer<ArrayList<Song>>() {
             @Override
             public void onChanged(ArrayList<Song> songs) {
-                musicAdapter.updateList(songs);
-                setTextSongNum(musicAdapter.getItemCount());
+                if(musicAdapter != null){
+                    musicAdapter.updateList(songs);
+                    setTextSongNum(musicAdapter.getItemCount());
+                }
             }
         });
     }
 
     public void setTextSongNum(int sl) {
-        text_list.setText("Playlist (" + sl + ")");
+        text_list.setText("Playlists (" + sl + ")");
     }
 
     @Override

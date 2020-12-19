@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.PorterDuff;
 import android.media.MediaMetadataRetriever;
 import android.os.Build;
 import android.os.Bundle;
@@ -22,9 +23,11 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import com.bumptech.glide.Glide;
 import com.example.myaudioplayer.R;
+import com.example.myaudioplayer.audiomodel.Library;
 import com.example.myaudioplayer.audiomodel.Playlist;
 import com.example.myaudioplayer.audiomodel.Song;
 import com.example.myaudioplayer.audioservice.AudioService;
+import com.example.myaudioplayer.viewmodel.LibraryViewModel;
 import com.example.myaudioplayer.viewmodel.PlaylistViewModel;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -36,15 +39,16 @@ import static com.example.myaudioplayer.helper.Helper.getEmbeddedArt;
 
 public class PlayerActivity extends AppCompatActivity {
     private PlaylistViewModel playlistViewModel;
+    private LibraryViewModel libraryViewModel;
     public static AudioService audioService;
     private boolean isBound = false;
     private BroadcastReceiver broadcastReceiver;
 
     //Views
-    TextView song_name, artist_name, duration_played, duration_total;
-    ImageView cover_art, nextBtn, preBtn, backBtn, shuffleBtn, repeatBtn, art_background;
-    FloatingActionButton playPauseBtn;
-    SeekBar seekBar;
+    private TextView song_name, artist_name, duration_played, duration_total;
+    private ImageView cover_art, nextBtn, preBtn, backBtn, shuffleBtn, repeatBtn, art_background, btn_favorite;
+    private FloatingActionButton playPauseBtn;
+    private SeekBar seekBar;
     //
     private int source;
     private int position;
@@ -59,6 +63,7 @@ public class PlayerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_player);
 
         playlistViewModel = ViewModelProviders.of(this).get(PlaylistViewModel.class);
+        libraryViewModel = ViewModelProviders.of(this).get(LibraryViewModel.class);
         registerLiveDataListenner();
         registerBroadcastReceiver();
         initView();
@@ -115,6 +120,14 @@ public class PlayerActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 finish();
+            }
+        });
+        btn_favorite.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Song song = playlistViewModel.getCurSong().getValue();
+                libraryViewModel.changeFavorite(song);
+                changeFavoritebtn(song.isFavorite());
             }
         });
     }
@@ -329,15 +342,14 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void getIntentMethod() {
         action = getIntent().getAction();
+        Bundle bundle = getIntent().getExtras();
         if (action.equals(MainActivity.PLAY_NEW_SONG)) {
-            Bundle bundle = getIntent().getExtras();
             position = bundle.getInt("position", -1);
             source = bundle.getInt("source", -1);
             String albumName = bundle.getString("albumName", "");
             String artist = bundle.getString("artist", "");
             playlistViewModel.setQueue(source, albumName, artist);
         } else {
-            Bundle bundle = getIntent().getExtras();
             int totalDuration = bundle.getInt("totalDuration", 300);
             seekBar.setMax(totalDuration);
             int curDuration = bundle.getInt("curDuration", 0);
@@ -345,6 +357,8 @@ public class PlayerActivity extends AppCompatActivity {
             duration_played.setText(formattedTime(curDuration));
             duration_total.setText(formattedTime(totalDuration));
         }
+        playlistViewModel.getIsShuffle().postValue(playlistViewModel.getShuffle());
+        playlistViewModel.getIsRepeat().postValue(playlistViewModel.getRepeat());
     }
 
     private void initView() {
@@ -364,8 +378,9 @@ public class PlayerActivity extends AppCompatActivity {
         //background
         art_background = findViewById(R.id.art_background);
         //
-    }
 
+        btn_favorite = findViewById(R.id.btn_favorite);
+    }
 
     private void setMetaData(Song musicFiles) {
         int durationTotal = Integer.parseInt(musicFiles.getDuration()) / 1000;
@@ -378,7 +393,7 @@ public class PlayerActivity extends AppCompatActivity {
         } else {
             duration_played.setText(formattedTime(0));
         }
-
+        changeFavoritebtn(musicFiles.isFavorite());
         song_name.setText(musicFiles.getTitle());
         artist_name.setText(musicFiles.getArtist());
 
@@ -395,5 +410,12 @@ public class PlayerActivity extends AppCompatActivity {
 //            Glide.with(this).load(R.drawable.background).into(art_background);
             ImageAnimation(this, art_background,  R.drawable.background, false);
         }
+    }
+
+    private  void changeFavoritebtn(boolean isfavorite) {
+        if (isfavorite)
+            this.btn_favorite.getDrawable().setColorFilter(getResources().getColor(R.color.progress), PorterDuff.Mode.SRC_IN);
+        else
+            this.btn_favorite.getDrawable().setColorFilter(getResources().getColor(R.color.colorAccent), PorterDuff.Mode.SRC_IN);
     }
 }

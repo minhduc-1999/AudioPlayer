@@ -51,12 +51,12 @@ public class PlaylistViewModel extends BaseViewModel {
     }
 
     public void setShuffle(Boolean isShuffle) {
-        this.isShuffle.setValue(isShuffle);
+        this.isShuffle.postValue(isShuffle);
         playlist.setShuffle(isShuffle);
     }
 
     public void setRepeat(Boolean isRepeat) {
-        this.isRepeat.setValue(isRepeat);
+        this.isRepeat.postValue(isRepeat);
         playlist.setRepeat(isRepeat);
     }
 
@@ -147,4 +147,11 @@ public class PlaylistViewModel extends BaseViewModel {
         return playlist.getNowSong();
     }
 
+    public boolean getShuffle() {
+        return playlist.isShuffle();
+    }
+
+    public boolean getRepeat() {
+        return playlist.isRepeat();
+    }
 }

@@ -53,6 +53,8 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
     private IBinder mBinder;
 
     public void changeAudio(Song song) throws IOException {
+        if (song == null)
+            throw new IOException("Song null");
         if (mediaPlayer != null) {
             mediaPlayer.stop();
             mediaPlayer.release();

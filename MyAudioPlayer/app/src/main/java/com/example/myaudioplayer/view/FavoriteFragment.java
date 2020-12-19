@@ -38,12 +38,6 @@ public class FavoriteFragment extends Fragment implements OnFavoriteChangeListen
         libraryViewModel = ViewModelProviders.of(getActivity()).get(LibraryViewModel.class);
         registerLiveDataListenner();
 
-        musicAdapter = new MusicAdapter(getContext(), Playlist.PLAYLIST_SOURCE_FAVORITE);
-        musicAdapter.addListener(this);
-        recyclerView.setAdapter(musicAdapter);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
-        recyclerView.setHasFixedSize(true);
-
         text_list = view.findViewById(R.id.text_list);
         return view;
     }
@@ -51,15 +45,24 @@ public class FavoriteFragment extends Fragment implements OnFavoriteChangeListen
     @Override
     public void onStart() {
         super.onStart();
+        musicAdapter = new MusicAdapter(getContext(), Playlist.PLAYLIST_SOURCE_FAVORITE);
+        musicAdapter.addListener(this);
+        recyclerView.setAdapter(musicAdapter);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext(), RecyclerView.VERTICAL, false));
+
         updateList(libraryViewModel.getFavoriteLists().getValue());
+        setTextFavoriteNum(musicAdapter.getItemCount());
+
     }
 
     private void registerLiveDataListenner() {
         libraryViewModel.getFavoriteLists().observe(this, new Observer<ArrayList<Song>>() {
             @Override
             public void onChanged(ArrayList<Song> songs) {
-                musicAdapter.updateList(songs);
-                setTextFavoriteNum(musicAdapter.getItemCount());
+                if(musicAdapter != null){
+                    musicAdapter.updateList(songs);
+                    setTextFavoriteNum(musicAdapter.getItemCount());
+                }
             }
         });
     }

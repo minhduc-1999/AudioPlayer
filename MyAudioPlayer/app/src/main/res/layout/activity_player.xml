@@ -35,6 +35,15 @@
         android:gravity="center"
         android:text="Now Playing"
         android:textAppearance="@style/Title" />
+    <ImageView
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:id="@+id/btn_favorite"
+        android:src="@drawable/ic_round_favorite_24"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginTop="25dp"
+        android:layout_marginRight="20dp"/>
 
     <ImageView
         android:id="@+id/cover_art"

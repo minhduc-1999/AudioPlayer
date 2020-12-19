@@ -11,7 +11,7 @@
         android:layout_marginLeft="30dp"
         android:layout_marginTop="5dp"
         android:layout_marginBottom="15dp"
-        android:text="Playlist (20)"
+        android:text="Playlists"
         android:textAppearance="@style/Title"
         android:id="@+id/text_list"/>
     <androidx.recyclerview.widget.RecyclerView

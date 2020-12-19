@@ -30,14 +30,10 @@ public class AlbumFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_album, container, false);
         recyclerView = view.findViewById(R.id.recyclerView);
+        recyclerView.setHasFixedSize(true);
 
         libraryViewModel = ViewModelProviders.of(getActivity()).get(LibraryViewModel.class);
         registerLiveDataListenner();
-
-        recyclerView.setHasFixedSize(true);
-        albumAdapter = new AlbumAdapter(getContext());
-        recyclerView.setAdapter(albumAdapter);
-        recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
 
         text_albumNum = view.findViewById(R.id.text_album_num);
         return view;
@@ -46,21 +42,29 @@ public class AlbumFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        albumAdapter = new AlbumAdapter(getContext());
+        recyclerView.setAdapter(albumAdapter);
+        recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
+
         updateList(libraryViewModel.getAlbums().getValue());
+        setTextAlbumNum(albumAdapter.getItemCount());
+
     }
 
     private void registerLiveDataListenner() {
         libraryViewModel.getAlbums().observe(this, new Observer<ArrayList<Album>>() {
             @Override
             public void onChanged(ArrayList<Album> albums) {
-                albumAdapter.updateList(albums);
-                setTextAlbumNum(albumAdapter.getItemCount());
+                if(albumAdapter != null) {
+                    albumAdapter.updateList(albums);
+                    setTextAlbumNum(albumAdapter.getItemCount());
+                }
             }
         });
     }
     public void setTextAlbumNum(int sl)
     {
-        text_albumNum.setText("Album (" + sl +")");
+        text_albumNum.setText("Albums (" + sl +")");
     }
 
     public void updateList(ArrayList<Album> albums) {
