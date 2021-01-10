@@ -1,5 +1,6 @@
 package com.example.myaudioplayer.view;
 
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +10,7 @@ import android.media.MediaMetadataRetriever;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.SeekBar;
@@ -61,6 +63,9 @@ public class PlayerActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_player);
+
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.cancel(AudioService.NOTI_ID);
 
         playlistViewModel = ViewModelProviders.of(this).get(PlaylistViewModel.class);
         libraryViewModel = ViewModelProviders.of(this).get(LibraryViewModel.class);
@@ -147,7 +152,7 @@ public class PlayerActivity extends AppCompatActivity {
                         break;
                     case AudioService.BRC_AUDIO_COMPLETED:
                         try {
-                            audioService.changeAudio(playlistViewModel.nextSong());
+                            audioService.changeAudio(playlistViewModel.nextSong(), AudioService.SENDER_PLAYER);
                         } catch (IOException e) {
                             e.printStackTrace();
                         } catch (Exception e) {
@@ -174,7 +179,7 @@ public class PlayerActivity extends AppCompatActivity {
                         Song temp = playlistViewModel.play(position);
                         if (temp != null) {
                             try {
-                                audioService.changeAudio(temp);
+                                audioService.changeAudio(temp, AudioService.SENDER_PLAYER);
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
@@ -233,6 +238,10 @@ public class PlayerActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        if(audioService.getState() == Playlist.STATE_PLAY)
+            audioService.showNotification(R.drawable.ic_round_pause_24);
+        else if (audioService.getState() == Playlist.STATE_PAUSE)
+            audioService.showNotification(R.drawable.ic_round_play_arrow_24);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(broadcastReceiver);
         if (playlistViewModel.getmBinder().getValue() != null) {
             unbindService(playlistViewModel.getServiceConnection());
@@ -272,7 +281,7 @@ public class PlayerActivity extends AppCompatActivity {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void nextBtnClick() throws Exception {
         if (isBound) {
-            audioService.changeAudio(playlistViewModel.nextSong());
+            audioService.changeAudio(playlistViewModel.nextSong(), AudioService.SENDER_PLAYER);
         }
 
     }
@@ -301,7 +310,7 @@ public class PlayerActivity extends AppCompatActivity {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     private void preBtnClick() throws IOException {
         if (isBound) {
-            audioService.changeAudio(playlistViewModel.preSong());
+            audioService.changeAudio(playlistViewModel.preSong(), AudioService.SENDER_PLAYER);
         }
     }
 
@@ -323,7 +332,7 @@ public class PlayerActivity extends AppCompatActivity {
 
     private void playPauseBtnClick() {
         if (isBound) {
-            audioService.playPauseAudio();
+            audioService.playPauseAudio(AudioService.SENDER_PLAYER);
         }
     }
 

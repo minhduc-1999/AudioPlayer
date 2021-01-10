@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import static com.example.myaudioplayer.audioservice.AudioService.BRC_SERVICE_FILTER;
+import static com.example.myaudioplayer.audioservice.AudioService.SENDER_HOME;
 import static com.example.myaudioplayer.helper.AnimationHelper.ImageAnimation;
 import static com.example.myaudioplayer.helper.Helper.getEmbeddedArt;
 
@@ -157,11 +158,11 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                     Song song = playlistViewModel.getCurrentSong();
                     if (song != null) {
                         try {
-                            audioService.changeAudio(song);
+                            audioService.changeAudio(song, SENDER_HOME);
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
-                        audioService.playPauseAudio();
+                        audioService.playPauseAudio(SENDER_HOME);
                         int curDuration = playlistViewModel.getCurDuration();
                         audioService.seekTo(curDuration * 1000);
                         seekBar.setProgress(curDuration);
@@ -249,7 +250,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                                     break;
                                 case AudioService.BRC_AUDIO_COMPLETED:
                                     try {
-                                        audioService.changeAudio(playlistViewModel.nextSong());
+                                        audioService.changeAudio(playlistViewModel.nextSong(), SENDER_HOME);
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     } catch (Exception e) {
@@ -265,7 +266,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                             switch (job) {
                                 case NotificationReceiver.BRC_NOTIFY_NEXT:
                                     try {
-                                        audioService.changeAudio(playlistViewModel.nextSong());
+                                        audioService.changeAudio(playlistViewModel.nextSong(), SENDER_HOME);
                                     } catch (Exception e) {
                                         //makeToast(e.getMessage(), Toast.LENGTH_SHORT);
                                         //Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -273,13 +274,13 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                                     break;
                                 case NotificationReceiver.BRC_NOTIFY_PRE:
                                     try {
-                                        audioService.changeAudio(playlistViewModel.preSong());
+                                        audioService.changeAudio(playlistViewModel.preSong(), SENDER_HOME);
                                     } catch (IOException e) {
                                         e.printStackTrace();
                                     }
                                     break;
                                 case NotificationReceiver.BRC_NOTIFY_PLAY:
-                                    audioService.playPauseAudio();
+                                    audioService.playPauseAudio(SENDER_HOME);
                                     break;
                                 default:
                                     break;
@@ -366,7 +367,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             public void onClick(View v) {
                 if (isBound) {
                     try {
-                        audioService.changeAudio(playlistViewModel.preSong());
+                        audioService.changeAudio(playlistViewModel.preSong(), SENDER_HOME);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -379,7 +380,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             public void onClick(View v) {
                 if (isBound) {
                     try {
-                        audioService.changeAudio(playlistViewModel.nextSong());
+                        audioService.changeAudio(playlistViewModel.nextSong(), SENDER_HOME);
                     } catch (Exception e) {
                         Toast.makeText(MainActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
@@ -390,7 +391,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             @Override
             public void onClick(View v) {
                 if (isBound) {
-                    audioService.playPauseAudio();
+                    audioService.playPauseAudio(SENDER_HOME);
                 }
             }
         });
@@ -495,7 +496,7 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
             public void run() {
                 super.run();
                 String userInput = newText.toLowerCase();
-                ArrayList<Song> songs = new ArrayList<>();
+                final ArrayList<Song> songs = new ArrayList<>();
                 switch (nowFragment)
                 {
                     case FAVORITE_FRAGMENT:
@@ -504,7 +505,12 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                                 songs.add(song);
                             }
                         }
-                        favoriteFragment.updateList(songs);
+                        MainActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                favoriteFragment.updateList(songs);
+                            }
+                        });
                         break;
                     case SONG_FRAGMENT:
                         for (Song song : libraryViewModel.getSongs().getValue()) {
@@ -512,16 +518,26 @@ public class MainActivity extends AppCompatActivity implements SearchView.OnQuer
                                 songs.add(song);
                             }
                         }
-                        songsFragment.updateList(songs);
+                        MainActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                songsFragment.updateList(songs);
+                            }
+                        });
                         break;
                     case ALBUM_FRAGMENT:
-                        ArrayList<Album> albums = new ArrayList<>();
+                        final ArrayList<Album> albums = new ArrayList<>();
                         for (Album album : libraryViewModel.getAlbums().getValue()) {
                             if (album.getName().toLowerCase().contains(userInput)) {
                                 albums.add(album);
                             }
                         }
-                        albumFragment.updateList(albums);
+                        MainActivity.this.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                albumFragment.updateList(albums);
+                            }
+                        });
                         break;
                     default:
                         break;

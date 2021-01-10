@@ -15,22 +15,21 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 
-import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
+import com.example.myaudioplayer.R;
+import com.example.myaudioplayer.audiomodel.Song;
 import com.example.myaudioplayer.notification.NotificationReceiver;
 import com.example.myaudioplayer.view.MainActivity;
-
-import com.example.myaudioplayer.R;
-
-import com.example.myaudioplayer.audiomodel.Song;
 import com.example.myaudioplayer.view.PlayerActivity;
 
 import java.io.IOException;
 
+import static com.example.myaudioplayer.audiomodel.Playlist.STATE_NONE;
+import static com.example.myaudioplayer.audiomodel.Playlist.STATE_PAUSE;
+import static com.example.myaudioplayer.audiomodel.Playlist.STATE_PLAY;
 import static com.example.myaudioplayer.view.MainActivity.MCHANNEL;
-import static com.example.myaudioplayer.audiomodel.Playlist.*;
 
 
 public class AudioService extends Service implements MediaPlayer.OnCompletionListener {
@@ -41,6 +40,10 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
     public static final String PLAYBUTTON = "PLAYBUTTON";
     public static final String PREBUTTON = "PREBUTTON";
     public static final String NEXTBUTTON = "NEXTBUTTON";
+    public static final int SENDER_DEFAULT = 30000;
+    public static final int SENDER_HOME = 30001;
+    public static final int SENDER_PLAYER = 30002;
+    public static final int NOTI_ID = 0;
 
     private Song curSong;
     private int state;
@@ -52,7 +55,7 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
 
     private IBinder mBinder;
 
-    public void changeAudio(Song song) throws IOException {
+    public void changeAudio(Song song, int sender) throws IOException {
         if (song == null)
             throw new IOException("Song null");
         if (mediaPlayer != null) {
@@ -80,7 +83,7 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
         mediaPlayer.setDataSource(getApplicationContext(), uri);
         mediaPlayer.prepare();
         mediaPlayer.start();
-        setState(STATE_PLAY);
+        setState(STATE_PLAY, sender);
         sendServiceBroadcast(BRC_SERVICE_FILTER, BRC_AUDIO_CHANGE);
     }
 
@@ -128,15 +131,15 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
             mediaPlayer.seekTo(pos);
     }
 
-    public void playPauseAudio() {
+    public void playPauseAudio(int sender) {
         if (mediaPlayer == null || state == STATE_NONE)
             return;
         if (state == STATE_PAUSE) {
             mediaPlayer.start();
-            setState(STATE_PLAY);
+            setState(STATE_PLAY, sender);
         } else {
             mediaPlayer.pause();
-            setState(STATE_PAUSE);
+            setState(STATE_PAUSE, sender);
         }
     }
 
@@ -151,20 +154,20 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
         return 0;
     }
 
-    private void setState(int state) {
+    private void setState(int state, int sender) {
         if (this.state == state)
             return;
         this.state = state;
-        if(state == STATE_PLAY)
+        if(state == STATE_PLAY && sender != SENDER_PLAYER)
             showNotification(R.drawable.ic_round_pause_24);
-        else if(state == STATE_PAUSE)
+        else if(state == STATE_PAUSE && sender != SENDER_PLAYER)
             showNotification(R.drawable.ic_round_play_arrow_24);
         sendServiceBroadcast(BRC_SERVICE_FILTER, BRC_PLAYING_STATE_CHANGE);
     }
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-        setState(STATE_NONE);
+        setState(STATE_NONE, SENDER_DEFAULT);
         sendServiceBroadcast(BRC_SERVICE_FILTER, BRC_AUDIO_COMPLETED);
     }
 
@@ -189,7 +192,7 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
         if (art != null) {
             bitmap = BitmapFactory.decodeByteArray(art, 0, art.length);
         } else {
-            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.music_default);
+            bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.background);
         }
         Intent intent = new Intent(this, PlayerActivity.class);
         intent.setAction(MainActivity.OPEN_PLAYING_BAR);
@@ -225,6 +228,6 @@ public class AudioService extends Service implements MediaPlayer.OnCompletionLis
                     .setLocalOnly(true);
         }
         NotificationManager notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        notificationManager.notify(0, mBuilder.build());
+        notificationManager.notify(NOTI_ID, mBuilder.build());
     }
 }
