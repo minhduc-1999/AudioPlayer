@@ -8,4 +8,5 @@
     <color name="color_none_select">#74B1AFAF</color>
     <color name="color_select">#FFFFFF</color>
     <color name="color_blur_bg">#33151520</color>
+    <color name="color_waiting_bg">#ffdedd</color>
 </resources>
