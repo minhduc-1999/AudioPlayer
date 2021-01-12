@@ -87,6 +87,8 @@ public class PlaylistViewModel extends BaseViewModel {
 
     public void setQueue(int source, String name, String artist) {
         if (source == playlist.getCurrentSource())
+            if(curSong.getValue() != null)
+                if(!curSong.getValue().getAlbum().equals(name))
             return;
         switch (source) {
             case Playlist.PLAYLIST_SOURCE_SONG:
